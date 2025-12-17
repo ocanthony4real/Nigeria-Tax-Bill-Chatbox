@@ -25,6 +25,7 @@ Thumbs.db
 *.log
 
 # Secrets
+.venv
 .env
 .env.*
 credentials.json

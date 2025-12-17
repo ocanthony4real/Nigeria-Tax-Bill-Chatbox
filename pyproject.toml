@@ -1,0 +1,33 @@
+# pyproject.toml
+
+[tool.poetry]
+name = "llm-engineers-handbook-final"
+version = "0.1.0"
+description = "Document lifecycle and LLM engineering pipeline"
+authors = ["Anthony <anthony@example.com>"]
+#readme = "README.md"
+#packages = [{ include = "llm_engineers_handbook_final" }]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+
+click = "8.0.1"
+loguru = "0.7.3"
+pdfminer-six = "20251107"
+pytesseract = "0.3.13"
+pypdfium2 = "5.1.0"
+Pillow = "12.0.0"
+zenml = "0.74.0"
+pydantic = "2.8"
+numpy = "2.3.5"
+pymongo = "4.15.5"
+qdrant-client = "1.8.0"
+transformers = "^4.57.3"
+
+#feature engineering
+sentence-transformers = "^3.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"

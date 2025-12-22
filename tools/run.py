@@ -10,9 +10,9 @@ from llm_engineering import settings
 
 from pipelines.pdf_data_etl import pdf_data_etl
 
-# from pipelines import (
-#     pdf_data_etl
-# )
+from pipelines import (
+     feature_engineering
+)
 
 
 @click.command(
@@ -57,6 +57,12 @@ Examples:
     help="Whether to run the pdf etl pipeline",
 )
 @click.option(
+    "--run-feature-engineering",
+    is_flag=True,
+    default=False,
+    help="Whether to run the FE pipeline.",
+)
+@click.option(
     "--export-settings",
     is_flag=True,
     default=False,
@@ -66,10 +72,12 @@ Examples:
 def main(
     no_cache: bool = False,
     run_pdf_etl: bool = False,
+    run_feature_engineering: bool = False,
     export_settings: bool = False,
 ) -> None:
     assert (
         run_pdf_etl
+        or run_feature_engineering
         or export_settings
     ), "Please specify an action to run."
 
@@ -90,7 +98,11 @@ def main(
         pipeline_args["run_name"] = f"pdf_etl_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         pdf_data_etl.with_options(**pipeline_args)(**run_args_pdf_etl)
     
-
+    if run_feature_engineering:
+        run_args_fe = {}
+        pipeline_args["config_path"] = root_dir / "configs" / "feature_engineering.yaml"
+        pipeline_args["run_name"] = f"feature_engineering_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+        feature_engineering.with_options(**pipeline_args)(**run_args_fe)
 
 if __name__ == "__main__":
     main()

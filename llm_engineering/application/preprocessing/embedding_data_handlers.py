@@ -2,13 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, cast
 
 from llm_engineering.application.networks import EmbeddingModelSingleton
-from llm_engineering.domain.chunks import ArticleChunk, Chunk, PostChunk, RepositoryChunk
-from llm_engineering.domain.embedded_chunks import (
-    EmbeddedArticleChunk,
-    EmbeddedChunk,
-    EmbeddedPostChunk,
-    EmbeddedRepositoryChunk,
-)
+from llm_engineering.domain.chunks import Chunk, TaxBillChunk
+from llm_engineering.domain.embedded_chunks import EmbeddedChunk, TaxBillEmbeddedChunk
+
 from llm_engineering.domain.queries import EmbeddedQuery, Query
 
 ChunkT = TypeVar("ChunkT", bound=Chunk)
@@ -58,9 +54,17 @@ class QueryEmbeddingHandler(EmbeddingDataHandler):
         )
 
 
-class PostEmbeddingHandler(EmbeddingDataHandler):
-    def map_model(self, data_model: PostChunk, embedding: list[float]) -> EmbeddedPostChunk:
-        return EmbeddedPostChunk(
+class TaxBillEmbeddingHandler(
+    EmbeddingDataHandler[TaxBillChunk, TaxBillEmbeddedChunk]
+):
+    """
+    Embedding handler for Nigerian tax bill chunks.
+    """
+
+    def map_model(
+        self, data_model: TaxBillChunk, embedding: list[float]
+    ) -> TaxBillEmbeddedChunk:
+        return TaxBillEmbeddedChunk(
             id=data_model.id,
             content=data_model.content,
             embedding=embedding,
@@ -68,45 +72,11 @@ class PostEmbeddingHandler(EmbeddingDataHandler):
             document_id=data_model.document_id,
             author_id=data_model.author_id,
             author_full_name=data_model.author_full_name,
-            metadata={
-                "embedding_model_id": embedding_model.model_id,
-                "embedding_size": embedding_model.embedding_size,
-                "max_input_length": embedding_model.max_input_length,
-            },
-        )
-
-
-class ArticleEmbeddingHandler(EmbeddingDataHandler):
-    def map_model(self, data_model: ArticleChunk, embedding: list[float]) -> EmbeddedArticleChunk:
-        return EmbeddedArticleChunk(
-            id=data_model.id,
-            content=data_model.content,
-            embedding=embedding,
-            platform=data_model.platform,
-            link=data_model.link,
-            document_id=data_model.document_id,
-            author_id=data_model.author_id,
-            author_full_name=data_model.author_full_name,
-            metadata={
-                "embedding_model_id": embedding_model.model_id,
-                "embedding_size": embedding_model.embedding_size,
-                "max_input_length": embedding_model.max_input_length,
-            },
-        )
-
-
-class RepositoryEmbeddingHandler(EmbeddingDataHandler):
-    def map_model(self, data_model: RepositoryChunk, embedding: list[float]) -> EmbeddedRepositoryChunk:
-        return EmbeddedRepositoryChunk(
-            id=data_model.id,
-            content=data_model.content,
-            embedding=embedding,
-            platform=data_model.platform,
-            name=data_model.name,
-            link=data_model.link,
-            document_id=data_model.document_id,
-            author_id=data_model.author_id,
-            author_full_name=data_model.author_full_name,
+            file_name=data_model.file_name,
+            page_number=data_model.page_number if hasattr(data_model, "page_number") else None,
+            chapter=data_model.chapter,
+            part=data_model.part,
+            section=data_model.section,
             metadata={
                 "embedding_model_id": embedding_model.model_id,
                 "embedding_size": embedding_model.embedding_size,

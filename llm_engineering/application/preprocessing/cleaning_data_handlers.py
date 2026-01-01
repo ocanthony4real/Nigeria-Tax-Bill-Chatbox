@@ -2,16 +2,12 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
 from llm_engineering.domain.cleaned_documents import (
-    CleanedArticleDocument,
     CleanedDocument,
-    CleanedPostDocument,
-    CleanedRepositoryDocument,
+    TaxBillCleanedDocument,
 )
 from llm_engineering.domain.documents import (
-    ArticleDocument,
     Document,
-    PostDocument,
-    RepositoryDocument,
+    TaxBillDocument,
 )
 
 from .operations import clean_text
@@ -31,40 +27,27 @@ class CleaningDataHandler(ABC, Generic[DocumentT, CleanedDocumentT]):
         pass
 
 
-class PostCleaningHandler(CleaningDataHandler):
-    def clean(self, data_model: PostDocument) -> CleanedPostDocument:
-        return CleanedPostDocument(
+class TaxBillCleaningHandler(CleaningDataHandler[TaxBillDocument, TaxBillCleanedDocument]):
+    """
+    Cleaning handler for Nigerian tax bills.
+    """
+
+    def clean(self, data_model: TaxBillDocument) -> TaxBillCleanedDocument:
+        # Collect valid content fields
+        valid_content = [value for value in data_model.content.values() if value]
+
+        cleaned_text = clean_text(" #### ".join(valid_content))
+
+        return TaxBillCleanedDocument(
             id=data_model.id,
-            content=clean_text(" #### ".join(data_model.content.values())),
+            content=cleaned_text,
             platform=data_model.platform,
             author_id=data_model.author_id,
             author_full_name=data_model.author_full_name,
-            image=data_model.image if data_model.image else None,
-        )
+            file_name=data_model.file_name,
+            chapter=data_model.chapter,
+            part=data_model.part,
+            sections=data_model.sections,
+            page_number=data_model.page_number,
 
-
-class ArticleCleaningHandler(CleaningDataHandler):
-    def clean(self, data_model: ArticleDocument) -> CleanedArticleDocument:
-        valid_content = [content for content in data_model.content.values() if content]
-
-        return CleanedArticleDocument(
-            id=data_model.id,
-            content=clean_text(" #### ".join(valid_content)),
-            platform=data_model.platform,
-            link=data_model.link,
-            author_id=data_model.author_id,
-            author_full_name=data_model.author_full_name,
-        )
-
-
-class RepositoryCleaningHandler(CleaningDataHandler):
-    def clean(self, data_model: RepositoryDocument) -> CleanedRepositoryDocument:
-        return CleanedRepositoryDocument(
-            id=data_model.id,
-            content=clean_text(" #### ".join(data_model.content.values())),
-            platform=data_model.platform,
-            name=data_model.name,
-            link=data_model.link,
-            author_id=data_model.author_id,
-            author_full_name=data_model.author_full_name,
         )

@@ -1,49 +1,50 @@
 from abc import ABC
-from typing import Optional
-
-from pydantic import UUID4, Field
-
+from typing import Optional, List
+from pydantic import Field, UUID4
+from .types import DataCategory
 from .base import NoSQLBaseDocument
 from .types import DataCategory
-
-
-class UserDocument(NoSQLBaseDocument):
-    first_name: str
-    last_name: str
-
-    class Settings:
-        name = "users"
-
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
+#from llm_engineering.domain.documents import Document
 
 
 class Document(NoSQLBaseDocument, ABC):
     content: dict
     platform: str
     author_id: UUID4 = Field(alias="author_id")
-    author_full_name: str = Field(alias="author_full_name")
+    author_full_name: str = Field(alias="file_name")
 
+class TaxBillPageDocument(NoSQLBaseDocument):
+    """
+    Represents a single stored page of a Nigerian tax bill PDF.
+    This is a storage-level document.
+    """
 
-class RepositoryDocument(Document):
-    name: str
+    content: dict
+
+    class Settings:
+        name = "tax_bills"
+
+    @classmethod
+    def bulk_find_by_pdf(cls, file_name: str) -> list["TaxBillPageDocument"]:
+        return cls.bulk_find(file_name=file_name)
+    
+class TaxBillDocument(Document):
+    """
+    Domain-level representation of a Nigerian tax bill page.
+    """
+
+    file_name: str
+    page_number: int
     link: str
 
-    class Settings:
-        name = DataCategory.REPOSITORIES
+    content: dict
+    platform: str
+    author_id: UUID4
+    author_full_name: str
 
-
-class PostDocument(Document):
-    image: Optional[str] = None
-    link: str | None = None
-
-    class Settings:
-        name = DataCategory.POSTS
-
-
-class ArticleDocument(Document):
-    link: str
+    chapter: Optional[str] = None
+    part: Optional[str] = None
+    sections: List[str] = []
 
     class Settings:
-        name = DataCategory.ARTICLES
+        name = DataCategory.TAX_BILLS

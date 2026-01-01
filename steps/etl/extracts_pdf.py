@@ -6,11 +6,11 @@ from datetime import datetime
 from uuid import UUID
 import re
 
+
 import pytesseract
 import pypdfium2 as pdfium
 from pdfminer.high_level import extract_text
-
-from llm_engineering.domain.documents import ArticleDocument
+from llm_engineering.domain.documents import TaxBillDocument
 
 logger = logging.getLogger(__name__)
 
@@ -66,66 +66,60 @@ def extract_page_text_ocr(pdf: pdfium.PdfDocument, page_index: int) -> str:
 # -----------------------------------------------------------------------------
 
 @step(enable_cache=False)
-def extract_pdfs(pdf_dir: str = "data/pdfs") -> List[ArticleDocument]:
+def extract_pdfs(pdf_dir: str = "data/pdfs") -> List[TaxBillDocument]:
     logger.warning("exctraction of pdf started")
 
     pdf_dir = Path(pdf_dir)
-    documents: List[ArticleDocument] = []
+    documents: List[TaxBillDocument] = []
 
     for pdf_path in pdf_dir.glob("*.pdf"):
-        logger.info(f"Processing PDF: {pdf_path.name}")
-
         pdf = pdfium.PdfDocument(str(pdf_path))
         try:
             for page_idx in range(len(pdf)):
                 page_number = page_idx + 1
 
-                # 1️⃣ Try digital extraction first
-                text = extract_page_text_pdfminer(pdf_path, page_idx)
+                text = extract_text(pdf_path, page_numbers=[page_idx]) or ""
                 extraction_method = "pdfminer"
 
-                # 2️⃣ OCR fallback only if clearly insufficient
+                # OCR fallback
                 if len(text.strip()) < 200:
-                    text = extract_page_text_ocr(pdf, page_idx)
-                    extraction_method = "ocr"
+                    page = pdf[page_idx]
+                    try:
+                        image = page.render(scale=300 / 72).to_pil()
+                        text = pytesseract.image_to_string(image)
+                        extraction_method = "ocr"
+                    finally:
+                        page.close()
 
-                # 3️⃣ Minimal cleanup (LOSSLESS)
+                # Minimal cleanup
                 text = minimal_cleanup(text)
 
                 if not text:
-                    logger.warning(
-                        f"Empty page {page_number} in {pdf_path.name}"
-                    )
+                    logger.warning(f"Empty page {page_number} in {pdf_path.name}")
                     continue
 
-                # 4️⃣ Build domain document (page-level knowledge unit)
-                doc = ArticleDocument(
+                doc = TaxBillDocument(
+                    file_name=pdf_path.name,
+                    page_number=page_number,
+                    link=f"{pdf_path.name}#page={page_number}",
+
                     content={
                         "text": text,
-                        "file_name": pdf_path.name,
-                        "page_number": page_number,
                         "source": "official_gazette",
                         "extraction_method": extraction_method,
                     },
                     platform="nigerian_legislation",
                     author_id=FGN_AUTHOR_ID,
                     author_full_name="Federal Government of Nigeria",
-                    link=f"{pdf_path.name}#page={page_number}",
-                    created_at=datetime.utcnow(),
                 )
 
                 documents.append(doc)
-
         finally:
-            # Guarantee pdfium cleanup even if something fails
             pdf.close()
 
-    # -------------------------------------------------------------------------
-    # Bulk insert (atomic)
-    # -------------------------------------------------------------------------
-
+    # Bulk insert
     if documents:
-        ArticleDocument.bulk_insert(documents)
+        TaxBillDocument.bulk_insert(documents)
         logger.info(f"Inserted {len(documents)} page-level documents")
     else:
         logger.warning("No documents extracted")

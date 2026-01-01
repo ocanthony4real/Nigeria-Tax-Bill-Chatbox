@@ -5,19 +5,19 @@ from typing import List
 
 from llm_engineering.infrastructure.db.mongo import connection
 from llm_engineering.settings import settings
-from llm_engineering.domain.documents import ArticleDocument
+from llm_engineering.domain.documents import TaxBillDocument
 
 logger = logging.getLogger(__name__)
 
 db = connection.get_database(settings.DATABASE_NAME)
-collection = db[ArticleDocument.get_collection_name()]
+collection = db[TaxBillDocument.get_collection_name()]
 
 CHAPTER_RE = re.compile(r"^\s*CHAPTER\s+[A-Z0-9IVXLC]+", re.IGNORECASE)
 PART_RE = re.compile(r"^\s*PART\s+[A-Z0-9IVXLC]+", re.IGNORECASE)
 SECTION_RE = re.compile(r"\bSection\s+(\d+[A-Z]?)", re.IGNORECASE)
 
 @step(enable_cache=False)
-def annotate_document_structure(_: List[ArticleDocument] | None = None):
+def annotate_document_structure(_: List[TaxBillDocument] | None = None):
     logger.info("Starting structural annotation")
 
     current_chapter = None

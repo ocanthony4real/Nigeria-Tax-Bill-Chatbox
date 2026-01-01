@@ -9,10 +9,11 @@ from loguru import logger
 from llm_engineering import settings
 
 from pipelines.pdf_data_etl import pdf_data_etl
+from pipelines.feature_engineering import feature_engineering
 
-from pipelines import (
-     feature_engineering
-)
+# from pipelines import (
+#      feature_engineering
+# )
 
 
 @click.command(
@@ -103,6 +104,9 @@ def main(
         pipeline_args["config_path"] = root_dir / "configs" / "feature_engineering.yaml"
         pipeline_args["run_name"] = f"feature_engineering_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         feature_engineering.with_options(**pipeline_args)(**run_args_fe)
+
+
+
 
 if __name__ == "__main__":
     main()

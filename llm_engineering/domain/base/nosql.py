@@ -1,10 +1,11 @@
 import uuid
 from abc import ABC
-from typing import Generic, Type, TypeVar
+from typing import Generic, Type, TypeVar, List
 
 from loguru import logger
 from pydantic import UUID4, BaseModel, Field
 from pymongo import errors
+from uuid import UUID
 
 from llm_engineering.domain.exceptions import ImproperlyConfigured
 from llm_engineering.infrastructure.db.mongo import connection
@@ -18,6 +19,7 @@ T = TypeVar("T", bound="NoSQLBaseDocument")
 
 class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
     id: UUID4 = Field(default_factory=uuid.uuid4)
+    #id: UUID
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, self.__class__):
@@ -27,6 +29,43 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
 
     def __hash__(self) -> int:
         return hash(self.id)
+    
+    @classmethod
+    def bulk_insert(cls: Type[T], documents: List[T]) -> int:
+        """
+        Insert a list of documents into MongoDB in one operation.
+
+        Returns:
+            Number of documents successfully inserted.
+        """
+        if not documents:
+            logger.warning("No documents to insert.")
+            return 0
+
+        db = connection.get_database(settings.DATABASE_NAME)
+        collection = db[cls.get_collection_name()]
+
+        try:
+            mongo_docs = [doc.to_mongo() for doc in documents]
+            result = collection.insert_many(mongo_docs)
+            inserted_count = len(result.inserted_ids)
+            logger.info(f"Inserted {inserted_count} documents into {cls.get_collection_name()}")
+            return inserted_count
+        except errors.BulkWriteError as e:
+            logger.exception(f"Bulk insert failed: {e.details}")
+            return 0
+        except Exception as e:
+            logger.exception(f"Unexpected error during bulk insert: {e}")
+            return 0
+        
+    @classmethod
+    def get_collection_name(cls) -> str:
+        try:
+            return cls.Settings.name
+        except AttributeError:
+            raise ImproperlyConfigured(
+                f"{cls.__name__} must define Settings.name to be used as a MongoDB collection."
+            )
 
     @classmethod
     def from_mongo(cls: Type[T], data: dict) -> T:
@@ -78,6 +117,15 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
     @classmethod
     def get_or_create(cls: Type[T], **filter_options) -> T:
         collection = _database[cls.get_collection_name()]
+
+        # 🔍 DEBUG: show collection info immediately after retrieval
+        print(
+            f"[DEBUG] Retrieved collection: "
+            f"name={collection.name}, "
+            f"database={collection.database.name}, "
+            f"filter_options={filter_options}"
+        )
+
         try:
             instance = collection.find_one(filter_options)
             if instance:
@@ -88,21 +136,23 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
 
             return new_instance
         except errors.OperationFailure:
-            logger.exception(f"Failed to retrieve document with filter options: {filter_options}")
-
+            logger.exception(
+                f"Failed to retrieve document with filter options: {filter_options}"
+            )
             raise
 
-    @classmethod
-    def bulk_insert(cls: Type[T], documents: list[T], **kwargs) -> bool:
-        collection = _database[cls.get_collection_name()]
-        try:
-            collection.insert_many(doc.to_mongo(**kwargs) for doc in documents)
 
-            return True
-        except (errors.WriteError, errors.BulkWriteError):
-            logger.error(f"Failed to insert documents of type {cls.__name__}")
+    # @classmethod
+    # def bulk_insert(cls: Type[T], documents: list[T], **kwargs) -> bool:
+    #     collection = _database[cls.get_collection_name()]
+    #     try:
+    #         collection.insert_many(doc.to_mongo(**kwargs) for doc in documents)
 
-            return False
+    #         return True
+    #     except (errors.WriteError, errors.BulkWriteError):
+    #         logger.error(f"Failed to insert documents of type {cls.__name__}")
+
+    #         return False
 
     @classmethod
     def find(cls: Type[T], **filter_options) -> T | None:
@@ -119,21 +169,25 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
             return None
 
     @classmethod
-    def bulk_find(cls: Type[T], **filter_options) -> list[T]:
+    def bulk_find(cls: Type[T], **filters) -> list[T]:
         collection = _database[cls.get_collection_name()]
+
         try:
-            instances = collection.find(filter_options)
-            return [document for instance in instances if (document := cls.from_mongo(instance)) is not None]
+            instances = collection.find(filters)
+            return [
+                cls.from_mongo(instance)
+                for instance in instances
+                if instance is not None
+            ]
         except errors.OperationFailure:
             logger.error("Failed to retrieve documents")
-
             return []
 
-    @classmethod
-    def get_collection_name(cls: Type[T]) -> str:
-        if not hasattr(cls, "Settings") or not hasattr(cls.Settings, "name"):
-            raise ImproperlyConfigured(
-                "Document should define an Settings configuration class with the name of the collection."
-            )
+    # @classmethod
+    # def get_collection_name(cls: Type[T]) -> str:
+    #     if not hasattr(cls, "Settings") or not hasattr(cls.Settings, "name"):
+    #         raise ImproperlyConfigured(
+    #             "Document should define an Settings configuration class with the name of the collection."
+    #         )
 
-        return cls.Settings.name
+    #     return cls.Settings.name

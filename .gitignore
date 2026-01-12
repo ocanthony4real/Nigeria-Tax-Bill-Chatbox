@@ -28,4 +28,4 @@ Thumbs.db
 .venv
 .env
 .env.*
-credentials.json
+*credentials*.json

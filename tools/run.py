@@ -10,6 +10,7 @@ from llm_engineering import settings
 
 from pipelines.pdf_data_etl import pdf_data_etl
 from pipelines.feature_engineering import feature_engineering
+from pipelines.generate_datasets import generate_datasets
 
 # from pipelines import (
 #      feature_engineering
@@ -64,6 +65,18 @@ Examples:
     help="Whether to run the FE pipeline.",
 )
 @click.option(
+    "--run-generate-instruct-datasets",
+    is_flag=True,
+    default=False,
+    help="Whether to run the instruct dataset generation pipeline.",
+)
+@click.option(
+    "--run-generate-preference-datasets",
+    is_flag=True,
+    default=False,
+    help="Whether to run the preference dataset generation pipeline.",
+)
+@click.option(
     "--export-settings",
     is_flag=True,
     default=False,
@@ -74,11 +87,15 @@ def main(
     no_cache: bool = False,
     run_pdf_etl: bool = False,
     run_feature_engineering: bool = False,
+    run_generate_instruct_datasets: bool = False,
+    run_generate_preference_datasets: bool = False,
     export_settings: bool = False,
 ) -> None:
     assert (
         run_pdf_etl
         or run_feature_engineering
+        or run_generate_instruct_datasets
+        or run_generate_preference_datasets
         or export_settings
     ), "Please specify an action to run."
 
@@ -105,6 +122,17 @@ def main(
         pipeline_args["run_name"] = f"feature_engineering_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         feature_engineering.with_options(**pipeline_args)(**run_args_fe)
 
+    if run_generate_instruct_datasets:
+        run_args_cd = {}
+        pipeline_args["config_path"] = root_dir / "configs" / "generate_instruct_datasets.yaml"
+        pipeline_args["run_name"] = f"generate_instruct_datasets_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+        generate_datasets.with_options(**pipeline_args)(**run_args_cd)
+
+    if run_generate_preference_datasets:
+        run_args_cd = {}
+        pipeline_args["config_path"] = root_dir / "configs" / "generate_preference_datasets.yaml"
+        pipeline_args["run_name"] = f"generate_preference_datasets_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+        generate_datasets.with_options(**pipeline_args)(**run_args_cd)
 
 
 

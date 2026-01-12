@@ -9,9 +9,9 @@ class Settings(BaseSettings):
 
     # --- Required settings even when working locally. ---
 
-    # OpenAI API
-    OPENAI_MODEL_ID: str = "gpt-4o-mini"
-    OPENAI_API_KEY: str | None = None
+    # Llama API
+    OLLAMA_MODEL: str | None = None
+    
 
     # Huggingface API
     HUGGINGFACE_ACCESS_TOKEN: str | None = None
@@ -66,17 +66,25 @@ class Settings(BaseSettings):
 
 
     @property
-    def OPENAI_MAX_TOKEN_WINDOW(self) -> int:
-        official_max_token_window = {
-            "gpt-3.5-turbo": 16385,
-            "gpt-4-turbo": 128000,
-            "gpt-4o": 128000,
-            "gpt-4o-mini": 128000,
-        }.get(self.OPENAI_MODEL_ID, 128000)
+    def OLLAMA_MAX_TOKEN_WINDOW(self) -> int:
+        """
+        Returns the maximum token window for the current Ollama model,
+        with a 90% safety margin to avoid overflow.
+        """
+        # Map Ollama model names to their max context size
+        OLLAMA_MAX_TOKEN_WINDOWS = {
+            "gemma:2b": 2048,
+        }
 
-        max_token_window = int(official_max_token_window * 0.90)
+        # Look up the max window for the active model
+        max_window = OLLAMA_MAX_TOKEN_WINDOWS.get(
+            self.settings.OLLAMA_MODEL, 2048  # fallback
+        )
 
-        return max_token_window
+        # Apply 90% safety margin
+        return int(max_window * 0.9)
+
+
 
     @classmethod
     def load_settings(cls) -> "Settings":

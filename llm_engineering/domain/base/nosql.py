@@ -171,7 +171,7 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
     @classmethod
     def bulk_find(cls: Type[T], **filters) -> list[T]:
         collection = _database[cls.get_collection_name()]
-
+        
         try:
             instances = collection.find(filters)
             return [

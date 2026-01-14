@@ -42,11 +42,12 @@ WORKDIR ${WORKSPACE_ROOT}
 COPY pyproject.toml poetry.lock ./
 
 # Install only runtime dependencies
-RUN poetry install \
+RUN poetry config virtualenvs.create false \
+    && poetry install \
         --no-root \
-        --without dev \
+        --only main \
+        --no-interaction \
         --no-ansi \
-        --no-cache \
     && rm -rf ~/.cache/pypoetry
 
 # =========================

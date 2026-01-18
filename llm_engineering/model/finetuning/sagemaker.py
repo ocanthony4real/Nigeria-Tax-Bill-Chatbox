@@ -1,8 +1,8 @@
-import os
+# import os
 
-os.environ["FLASH_ATTENTION_DISABLE"] = "1"
-os.environ["FLASH_ATTENTION_FORCE_DISABLE"] = "1"
-os.environ["USE_FLASH_ATTENTION"] = "0"
+# os.environ["FLASH_ATTENTION_DISABLE"] = "1"
+# os.environ["FLASH_ATTENTION_FORCE_DISABLE"] = "1"
+# os.environ["USE_FLASH_ATTENTION"] = "0"
 
 
 from pathlib import Path

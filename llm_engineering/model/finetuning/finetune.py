@@ -15,14 +15,14 @@ import torch
 
 import argparse
 
-import subprocess, sys
+# import subprocess, sys
 
-subprocess.check_call([
-    sys.executable, "-m", "pip", "install",
-    "flash-attn==2.3.6",
-    "--no-binary", "flash-attn",
-    "--no-build-isolation",
-])
+# subprocess.check_call([
+#     sys.executable, "-m", "pip", "install",
+#     "flash-attn==2.3.6",
+#     "--no-binary", "flash-attn",
+#     "--no-build-isolation",
+# ])
 from unsloth import PatchDPOTrainer
 
 PatchDPOTrainer()

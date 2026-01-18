@@ -30,6 +30,8 @@ jobs:
         run: |
           docker build \
             -t ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:${{ github.sha }} \
+            -t ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:latest \
             .
-          docker push \
-            ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:${{ github.sha }}
+
+          docker push ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:${{ github.sha }}
+          docker push ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:latest

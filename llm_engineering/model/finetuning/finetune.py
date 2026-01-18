@@ -1,12 +1,14 @@
 
 import os
 from pathlib import Path
-# os.environ["FLASH_ATTENTION"] = "0"
-# os.environ["XFORMERS_DISABLED"] = "1"
-# os.environ["FLASH_ATTENTION_DISABLE"] = "1"
-# os.environ["FLASH_ATTENTION_FORCE_DISABLE"] = "1"
-# os.environ["USE_FLASH_ATTENTION"] = "0"
 
+# Hard-disable FlashAttention everywhere
+os.environ["FLASH_ATTENTION_FORCE_DISABLE"] = "1"
+os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "1"
+os.environ["FLASH_ATTENTION_DISABLE"] = "1"
+
+# Prevent transformers from even trying
+os.environ["TRANSFORMERS_NO_FLASH_ATTENTION"] = "1"
 
 import torch
 # print("PyTorch version:", torch.__version__)

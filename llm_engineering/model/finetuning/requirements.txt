@@ -18,3 +18,4 @@ trl==0.9.6
 bitsandbytes==0.43.3
 comet-ml==3.44.3
 unsloth==2024.9.post2
+triton==2.1.0

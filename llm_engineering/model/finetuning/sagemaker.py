@@ -19,7 +19,7 @@ def run_finetuning_on_sagemaker(
     num_train_epochs: int = 3,
     per_device_train_batch_size: int = 2,
     learning_rate: float = 3e-4,
-    dataset_huggingface_workspace: str = "mlabonne",
+    dataset_huggingface_workspace: str = "ocanthony4real",
     is_dummy: bool = False,
 ) -> None:
     assert settings.HUGGINGFACE_ACCESS_TOKEN, "Hugging Face access token is required."
@@ -45,12 +45,13 @@ def run_finetuning_on_sagemaker(
     }
     if is_dummy:
         hyperparameters["is_dummy"] = True
-
+    #print("AWS_ARN_ROLE is " f"{settings.AWS_ARN_ROLE}")
     # Create the HuggingFace SageMaker estimator
     huggingface_estimator = HuggingFace(
         entry_point="finetune.py",
         source_dir=str(finetuning_dir),
-        instance_type="ml.g5.2xlarge",
+        #instance_type="ml.g5.2xlarge",
+        instance_type="ml.g4dn.xlarge",
         instance_count=1,
         role=settings.AWS_ARN_ROLE,
         transformers_version="4.36",
@@ -59,9 +60,12 @@ def run_finetuning_on_sagemaker(
         hyperparameters=hyperparameters,
         requirements_file=finetuning_requirements_path,
         environment={
+            # "FLASH_ATTENTION": "0",
+            # "XFORMERS_DISABLED": "1",
             "HUGGING_FACE_HUB_TOKEN": settings.HUGGINGFACE_ACCESS_TOKEN,
             "COMET_API_KEY": settings.COMET_API_KEY,
             "COMET_PROJECT_NAME": settings.COMET_PROJECT,
+
         },
     )
 

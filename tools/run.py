@@ -11,6 +11,7 @@ from llm_engineering import settings
 from pipelines.pdf_data_etl import pdf_data_etl
 from pipelines.feature_engineering import feature_engineering
 from pipelines.generate_datasets import generate_datasets
+from pipelines.training import training
 
 # from pipelines import (
 #      feature_engineering
@@ -82,6 +83,12 @@ Examples:
     default=False,
     help="Whether to export your settings to ZenML or not.",
 )
+@click.option(
+    "--run-training",
+    is_flag=True,
+    default=False,
+    help="Whether to run the training pipeline.",
+)
 
 def main(
     no_cache: bool = False,
@@ -89,6 +96,7 @@ def main(
     run_feature_engineering: bool = False,
     run_generate_instruct_datasets: bool = False,
     run_generate_preference_datasets: bool = False,
+    run_training: bool = False,
     export_settings: bool = False,
 ) -> None:
     assert (
@@ -96,6 +104,7 @@ def main(
         or run_feature_engineering
         or run_generate_instruct_datasets
         or run_generate_preference_datasets
+        or run_training
         or export_settings
     ), "Please specify an action to run."
 
@@ -127,6 +136,12 @@ def main(
         pipeline_args["config_path"] = root_dir / "configs" / "generate_instruct_datasets.yaml"
         pipeline_args["run_name"] = f"generate_instruct_datasets_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         generate_datasets.with_options(**pipeline_args)(**run_args_cd)
+
+    if run_training:
+        run_args_cd = {}
+        pipeline_args["config_path"] = root_dir / "configs" / "training.yaml"
+        pipeline_args["run_name"] = f"training_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+        training.with_options(**pipeline_args)(**run_args_cd)
 
     if run_generate_preference_datasets:
         run_args_cd = {}

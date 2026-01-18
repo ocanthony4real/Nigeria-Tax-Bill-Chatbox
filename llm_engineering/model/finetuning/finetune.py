@@ -1,14 +1,32 @@
-import argparse
+
 import os
 from pathlib import Path
+# os.environ["FLASH_ATTENTION"] = "0"
+# os.environ["XFORMERS_DISABLED"] = "1"
+os.environ["FLASH_ATTENTION_DISABLE"] = "1"
 
+import torch
+# print("PyTorch version:", torch.__version__)
+# print("CUDA version:", torch.version.cuda)
+# print("Is CUDA available:", torch.cuda.is_available())
+
+import argparse
+
+import subprocess, sys
+
+subprocess.check_call([
+    sys.executable, "-m", "pip", "install",
+    "flash-attn==2.3.6",
+    "--no-binary", "flash-attn",
+    "--no-build-isolation",
+])
 from unsloth import PatchDPOTrainer
 
 PatchDPOTrainer()
 
 from typing import Any, List, Literal, Optional  # noqa: E402
 
-import torch  # noqa
+#import torch  # noqa
 from datasets import concatenate_datasets, load_dataset  # noqa: E402
 from huggingface_hub import HfApi  # noqa: E402
 from huggingface_hub.utils import RepositoryNotFoundError  # noqa: E402

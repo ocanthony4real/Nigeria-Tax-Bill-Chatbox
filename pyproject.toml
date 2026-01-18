@@ -27,10 +27,13 @@ pymongo = "4.15.5"
 qdrant-client = "1.8.0"
 transformers = "^4.57.3"
 datasets = "^3.0.1"
+poethepoet = "0.29.0"
 
 #feature engineering
 sentence-transformers = "^3.0.0"
 
+[tool.poe.tasks]
+export-settings-to-zenml = "poetry run python -m tools.run --export-settings"
 
 [tool.poetry.group.aws.dependencies]
 sagemaker = ">=2.232.2"

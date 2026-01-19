@@ -5,10 +5,7 @@
 # os.environ["USE_FLASH_ATTENTION"] = "0"
 
 
-import torch
-import flash_attn
-import xformers
-import bitsandbytes 
+
 
 
 
@@ -52,15 +49,6 @@ def run_finetuning_on_sagemaker(
 
 
 
-    print("Torch:", torch.__version__)
-    print("CUDA available:", torch.cuda.is_available())
-    print("flash-attn:", flash_attn.__version__)
-    print("xformers:", xformers.__version__)
-    print("bitsandbytes:", bitsandbytes.__version__)
-
-
-
-
     hyperparameters = {
         "finetuning_type": finetuning_type,
         "num_train_epochs": num_train_epochs,
@@ -94,6 +82,7 @@ def run_finetuning_on_sagemaker(
 
         },
     )
+ 
 
     # Start the training job on SageMaker.
     huggingface_estimator.fit()

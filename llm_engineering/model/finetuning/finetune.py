@@ -27,6 +27,33 @@ import argparse
 # ])
 from unsloth import PatchDPOTrainer
 
+import torch
+
+try:
+    import flash_attn
+    print("flash-attn:", flash_attn.__version__)
+except Exception as e:
+    print("flash-attn FAILED:", e)
+
+try:
+    import xformers
+    print("xformers:", xformers.__version__)
+except Exception as e:
+    print("xformers FAILED:", e)
+
+try:
+    import bitsandbytes as bnb
+    print("bitsandbytes:", bnb.__version__)
+except Exception as e:
+    print("bitsandbytes FAILED:", e)
+
+print("Torch:", torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+print("CUDA version:", torch.version.cuda)
+print("GPU count:", torch.cuda.device_count())
+
+
+
 PatchDPOTrainer()
 
 from typing import Any, List, Literal, Optional  # noqa: E402

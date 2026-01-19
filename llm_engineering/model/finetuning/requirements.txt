@@ -7,4 +7,3 @@ bitsandbytes==0.45.0
 comet-ml==3.44.3
 unsloth==2024.9.post2
 
-flash-attn==2.5.8

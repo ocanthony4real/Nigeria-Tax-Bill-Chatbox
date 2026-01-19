@@ -5,6 +5,13 @@
 # os.environ["USE_FLASH_ATTENTION"] = "0"
 
 
+import torch
+import flash_attn
+import xformers
+import bitsandbytes 
+
+
+
 from pathlib import Path
 
 from huggingface_hub import HfApi
@@ -42,6 +49,18 @@ def run_finetuning_on_sagemaker(
     huggingface_user = user_info["name"]
     logger.info(f"Current Hugging Face user: {huggingface_user}")
 
+
+
+
+    print("Torch:", torch.__version__)
+    print("CUDA available:", torch.cuda.is_available())
+    print("flash-attn:", flash_attn.__version__)
+    print("xformers:", xformers.__version__)
+    print("bitsandbytes:", bitsandbytes.__version__)
+
+
+
+
     hyperparameters = {
         "finetuning_type": finetuning_type,
         "num_train_epochs": num_train_epochs,
@@ -58,7 +77,7 @@ def run_finetuning_on_sagemaker(
         entry_point="finetune.py",
         source_dir=str(finetuning_dir),
         #instance_type="ml.g5.2xlarge",
-        instance_type="ml.g4dn.xlarge",
+        instance_type="ml.g5.xlarge",
         instance_count=1,
         role=settings.AWS_ARN_ROLE,
         transformers_version="4.36",

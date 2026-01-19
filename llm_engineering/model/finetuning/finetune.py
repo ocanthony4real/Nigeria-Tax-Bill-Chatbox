@@ -42,8 +42,8 @@ except Exception as e:
     print("xformers FAILED:", e)
 
 try:
-    import bitsandbytes as bnb
-    print("bitsandbytes:", bnb.__version__)
+    import bitsandbytes
+    print("bitsandbytes:", bitsandbytes.__version__)
 except Exception as e:
     print("bitsandbytes FAILED:", e)
 
@@ -51,6 +51,11 @@ print("Torch:", torch.__version__)
 print("CUDA available:", torch.cuda.is_available())
 print("CUDA version:", torch.version.cuda)
 print("GPU count:", torch.cuda.device_count())
+print("Torch:", torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+print("flash-attn:", flash_attn.__version__)
+print("xformers:", xformers.__version__)
+print("bitsandbytes:", bitsandbytes.__version__)
 
 
 

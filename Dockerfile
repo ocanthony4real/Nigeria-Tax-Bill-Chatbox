@@ -34,6 +34,14 @@ RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}" && \
     poetry config virtualenvs.create false
 
 # =========================
+# Jupyter kernel setup (REQUIRED for SageMaker Studio)
+# =========================
+RUN pip install --no-cache-dir jupyter ipykernel \
+ && python -m ipykernel install \
+      --name python3 \
+      --display-name "Python 3 (Custom Image)"
+
+# =========================
 # Application setup
 # =========================
 WORKDIR ${WORKSPACE_ROOT}

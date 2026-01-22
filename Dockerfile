@@ -25,6 +25,7 @@ RUN apt-get update -y && \
         build-essential \
         gcc \
         python3-dev \
+        python3-pip \
         libglib2.0-0 \
         libnss3 \
         curl \

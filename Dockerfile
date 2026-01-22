@@ -1,9 +1,5 @@
-# =====================================================
+# Use CUDA runtime base image (Ubuntu 22.04 -> system python is 3.10)
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
-
-
-
-#FROM python:3.11-slim-bullseye AS release
 
 # =========================
 # Environment configuration
@@ -18,32 +14,45 @@ ENV POETRY_VERSION=2.2.1
 ENV POETRY_NO_INTERACTION=1
 
 # =========================
-# System dependencies
+# System dependencies + install Python 3.11
 # =========================
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
+        software-properties-common \
+        ca-certificates \
+        curl \
         build-essential \
         gcc \
-        python3-dev \
-        python3-pip \
+        lsb-release \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        python3.11 \
+        python3.11-dev \
+        python3.11-distutils \
+        python3.11-venv \
         libglib2.0-0 \
         libnss3 \
-        curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# =========================
-# Install Poetry
-# =========================
-RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}" && \
-    poetry config installer.max-workers 20 && \
-    poetry config virtualenvs.create false
+# Make python3 point to python3.11 and install pip for python3.11
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2 && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
+    python3.11 -m pip install --upgrade pip setuptools wheel
 
 # =========================
-# Jupyter kernel registration (REQUIRED)
+# Install Poetry using python3.11's pip and configure it
 # =========================
-RUN pip install --no-cache-dir jupyter ipykernel \
- && python3 -m ipykernel install \
+RUN python3.11 -m pip install --no-cache-dir "poetry==${POETRY_VERSION}" && \
+    python3.11 -m poetry config installer.max-workers 20 && \
+    python3.11 -m poetry config virtualenvs.create false
+
+# =========================
+# Jupyter kernel registration (REQUIRED) using python3.11
+# =========================
+RUN python3.11 -m pip install --no-cache-dir jupyter ipykernel && \
+    python3.11 -m ipykernel install \
       --sys-prefix \
       --name python3 \
       --display-name "Python 3 (Custom Image)"
@@ -56,14 +65,14 @@ WORKDIR ${WORKSPACE_ROOT}
 # Copy dependency definitions first (better layer caching)
 COPY pyproject.toml poetry.lock ./
 
-# Install only runtime dependencies
-RUN poetry config virtualenvs.create false \
-    && poetry install \
+# Install only runtime dependencies (use poetry installed for python3.11)
+RUN python3.11 -m poetry config virtualenvs.create false && \
+    python3.11 -m poetry install \
         --no-root \
         --only main \
         --no-interaction \
-        --no-ansi \
-    && rm -rf ~/.cache/pypoetry
+        --no-ansi && \
+    rm -rf /root/.cache/pypoetry
 
 # =========================
 # Copy application source

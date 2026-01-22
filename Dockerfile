@@ -1,7 +1,5 @@
 # =====================================================
-# SageMaker GPU base image (CUDA + cuDNN included)
-# =====================================================
-FROM 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.1.0-gpu-py311-cu121-ubuntu20.04
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 
 

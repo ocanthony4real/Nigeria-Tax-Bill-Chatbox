@@ -54,8 +54,8 @@ RUN python3.11 -m pip install --no-cache-dir "poetry==${POETRY_VERSION}" && \
 RUN python3.11 -m pip install --no-cache-dir jupyter ipykernel && \
     python3.11 -m ipykernel install \
       --sys-prefix \
-      --name python3 \
-      --display-name "Python 3 (Custom Image)"
+      --name tax-bill \
+      --display-name "tax-bill-kernel"
 
 # =========================
 # Application setup

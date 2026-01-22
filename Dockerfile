@@ -52,10 +52,8 @@ RUN python3.11 -m pip install --no-cache-dir "poetry==${POETRY_VERSION}" && \
 # Jupyter kernel registration (REQUIRED) using python3.11
 # =========================
 RUN python3.11 -m pip install --no-cache-dir jupyter ipykernel && \
-    python3.11 -m ipykernel install \
-      --sys-prefix \
-      --name tax-bill \
-      --display-name "tax-bill-kernel"
+    python3.11 -m ipykernel install --prefix=/opt/conda --name tax-bill --display-name "tax-bill-kernel"
+
 
 # =========================
 # Application setup

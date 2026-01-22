@@ -43,7 +43,7 @@ RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}" && \
 # Jupyter kernel registration (REQUIRED)
 # =========================
 RUN pip install --no-cache-dir jupyter ipykernel \
- && python -m ipykernel install \
+ && python3 -m ipykernel install \
       --sys-prefix \
       --name python3 \
       --display-name "Python 3 (Custom Image)"

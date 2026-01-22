@@ -1,83 +1,36 @@
-# Use CUDA runtime base image (Ubuntu 22.04 -> system python is 3.10)
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+# -------- GPU base (CUDA runtime, small & stable) --------
+FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 
-# =========================
-# Environment configuration
-# =========================
-ENV WORKSPACE_ROOT=/app
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV DEBIAN_FRONTEND=noninteractive
+# -------- Environment hygiene --------
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Poetry
-ENV POETRY_VERSION=2.2.1
-ENV POETRY_NO_INTERACTION=1
-
-# =========================
-# System dependencies + install Python 3.11
-# =========================
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-        software-properties-common \
-        ca-certificates \
-        curl \
-        build-essential \
-        gcc \
-        lsb-release \
-    && add-apt-repository -y ppa:deadsnakes/ppa \
-    && apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-        python3.11 \
-        python3.11-dev \
-        python3.11-distutils \
-        python3.11-venv \
-        libglib2.0-0 \
-        libnss3 \
-    && apt-get clean \
+# -------- System deps --------
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Make python3 point to python3.11 and install pip for python3.11
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2 && \
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
-    python3.11 -m pip install --upgrade pip setuptools wheel
+# -------- Make python default --------
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
-# =========================
-# Install Poetry using python3.11's pip and configure it
-# =========================
-RUN python3.11 -m pip install --no-cache-dir "poetry==${POETRY_VERSION}" && \
-    python3.11 -m poetry config installer.max-workers 20 && \
-    python3.11 -m poetry config virtualenvs.create false
+# -------- Minimal Python deps --------
+RUN pip install --no-cache-dir \
+    ipykernel \
+    jupyter-client
 
-# =========================
-# Jupyter kernel registration (REQUIRED) using python3.11
-# =========================
-RUN python3.11 -m pip install --no-cache-dir jupyter ipykernel && \
-    python3.11 -m ipykernel install --prefix=/opt/conda --name tax-bill --display-name "tax-bill-kernel"
+# -------- Register kernel (THIS IS THE KEY PART) --------
+RUN python -m ipykernel install \
+    --sys-prefix \
+    --name gpu-minimal \
+    --display-name "GPU Minimal Kernel"
 
+# -------- SageMaker Studio expectations --------
+# Studio runs as root by default, so no USER switch needed
+WORKDIR /root
 
-# =========================
-# Application setup
-# =========================
-WORKDIR ${WORKSPACE_ROOT}
-
-# Copy dependency definitions first (better layer caching)
-COPY pyproject.toml poetry.lock ./
-
-# Install only runtime dependencies (use poetry installed for python3.11)
-RUN python3.11 -m poetry config virtualenvs.create false && \
-    python3.11 -m poetry install \
-        --no-root \
-        --only main \
-        --no-interaction \
-        --no-ansi && \
-    rm -rf /root/.cache/pypoetry
-
-# =========================
-# Copy application source
-# =========================
-COPY . .
-
-# =========================
-# Default command (override in ZenML / docker run)
-# =========================
-CMD ["python", "-m", "llm_engineering"]
+# -------- Keep container alive --------
+CMD ["bash"]

@@ -1,36 +1,75 @@
-# -------- GPU base (CUDA runtime, small & stable) --------
-FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
+# =========================
+# Base image: CUDA for GPU training support
+# =========================
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
-# -------- Environment hygiene --------
-ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# =========================
+# Environment configuration
+# =========================
+ENV WORKSPACE_ROOT=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
 
-# -------- System deps --------
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    ca-certificates \
+# Poetry configuration
+ENV POETRY_VERSION=1.8.3
+ENV POETRY_NO_INTERACTION=1
+
+# =========================
+# System dependencies + Python 3.11
+# =========================
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        software-properties-common \
+        ca-certificates \
+        curl \
+        build-essential \
+        gcc \
+        python3-dev \
+        libglib2.0-dev \
+        libnss3-dev \
+        # Tesseract OCR for PDF processing
+        tesseract-ocr \
+        tesseract-ocr-eng \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+        python3.11 \
+        python3.11-dev \
+        python3.11-distutils \
+        python3.11-venv \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# -------- Make python default --------
-RUN ln -sf /usr/bin/python3 /usr/bin/python
+# Make python3.11 the default and install pip
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
+    python3.11 -m pip install --upgrade pip setuptools wheel
 
-# -------- Minimal Python deps --------
-RUN pip install --no-cache-dir \
-    ipykernel \
-    jupyter-client
+# =========================
+# Install Poetry and configure
+# =========================
+RUN pip install --no-cache-dir "poetry==$POETRY_VERSION" && \
+    poetry config installer.max-workers 20
 
-# -------- Register kernel (THIS IS THE KEY PART) --------
-RUN python -m ipykernel install \
-    --sys-prefix \
-    --name gpu-minimal \
-    --display-name "GPU Minimal Kernel"
+WORKDIR $WORKSPACE_ROOT
 
-# -------- SageMaker Studio expectations --------
-# Studio runs as root by default, so no USER switch needed
-WORKDIR /root
+# =========================
+# Copy dependency files first (better layer caching)
+# =========================
+COPY pyproject.toml poetry.lock $WORKSPACE_ROOT
 
-# -------- Keep container alive --------
-CMD ["bash"]
+# =========================
+# Install dependencies
+# =========================
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-root --no-interaction --no-cache --only main && \
+    poetry self add 'poethepoet[poetry_plugin]' && \
+    rm -rf ~/.cache/pypoetry/cache/ && \
+    rm -rf ~/.cache/pypoetry/artifacts/
+
+# =========================
+# Copy application source
+# =========================
+COPY . $WORKSPACE_ROOT

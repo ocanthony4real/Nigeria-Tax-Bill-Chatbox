@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Virtual environments
+.venv
+venv
+env
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment files (secrets!)
+.env
+.env.*
+*.env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# GitHub Actions (not needed in container)
+.github
+
+# Documentation
+*.md
+docs/
+
+# Test files
+tests/
+
+# Build artifacts
+*.egg-info
+dist/
+build/
+
+# Credentials (security)
+*credentials*.json
+*secret*.json
+sagemaker_*.json

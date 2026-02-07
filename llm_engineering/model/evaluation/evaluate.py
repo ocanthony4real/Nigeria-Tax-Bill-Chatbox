@@ -3,14 +3,14 @@ import gc
 import json
 import os
 
+import anthropic
 from datasets import Dataset, load_dataset
 from huggingface_hub import HfApi
 from huggingface_hub.utils import RepositoryNotFoundError
-from openai import OpenAI
 from tqdm.auto import tqdm
 from vllm import LLM, SamplingParams
 
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 DATASET_HUGGINGFACE_WORKSPACE = os.environ["DATASET_HUGGINGFACE_WORKSPACE"]
 MODEL_HUGGINGFACE_WORKSPACE = os.environ["MODEL_HUGGINGFACE_WORKSPACE"]
 IS_DUMMY = os.environ.get("IS_DUMMY", False)
@@ -38,7 +38,7 @@ def generate_answers(model_id: str, dataset_name: str):
     dataset = dataset.map(lambda sample: {"prompt": format(sample)})
 
     print(f"Generating answers for {model_id}")  # noqa
-    llm = LLM(model=model_id, max_model_len=2048)
+    llm = LLM(model=model_id, max_model_len=2048, dtype="half")  # Use float16 for T4 GPU compatibility
     sampling_params = SamplingParams(temperature=0.8, top_p=0.95, min_p=0.05, max_tokens=2048)
     outputs = llm.generate(dataset["prompt"], sampling_params)
 
@@ -52,7 +52,7 @@ def generate_answers(model_id: str, dataset_name: str):
     return dataset
 
 
-def evaluate_answer(instruction: str, answer: str, client: OpenAI) -> dict:
+def evaluate_answer(instruction: str, answer: str, client: anthropic.Anthropic) -> dict:
     prompt = f"""You are an expert judge. Please evaluate the quality of a given answer to an instruction based on two criteria:
 1. Accuracy: How factually correct is the information presented in the answer? You are a technical expert in this topic.
 2. Style: Is the tone and writing style appropriate for a blog post or social media content? It should use simple but technical words and avoid formal or academic language.
@@ -87,26 +87,21 @@ Provide your evaluation in JSON format with the following structure:
 }}
 """
 
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+    message = client.messages.create(
+        model="claude-3-5-haiku-20241022",
+        max_tokens=1000,
+        system="You are a helpful assistant who evaluates answers based on accuracy and style. Provide your response in JSON format with a short analysis and score for each criterion.",
         messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful assistant who evaluates answers based on accuracy and style. Provide your response in JSON format with a short analysis and score for each criterion.",
-            },
             {"role": "user", "content": prompt},
         ],
-        response_format={"type": "json_object"},
-        max_tokens=1000,
-        temperature=0.9,
     )
 
     # Parse the structured output
-    return json.loads(completion.choices[0].message.content)
+    return json.loads(message.content[0].text)
 
 
 def evaluate_batch(batch, start_index):
-    client = OpenAI(api_key=OPENAI_API_KEY)
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     return [(i, evaluate_answer(instr, ans, client)) for i, (instr, ans) in enumerate(batch, start=start_index)]
 
 
@@ -197,11 +192,14 @@ def check_if_huggingface_dataset_exists(dataset_id: str, default_value: str) -> 
 
 model_ids = [
     check_if_huggingface_model_exists(
-        f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B", default_value="mlabonne/TwinLlama-3.1-8B"
+        f"{MODEL_HUGGINGFACE_WORKSPACE}/NigeriaTaxLlama-3.1-8B",
+        default_value=f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B"
     ),
-    check_if_huggingface_model_exists(
-        f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B-DPO", default_value="mlabonne/TwinLlama-3.1-8B-DPO"
-    ),
+    # Commented out - model doesn't exist yet
+    # check_if_huggingface_model_exists(
+    #     f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B-DPO",
+    #     default_value=f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B-DPO"
+    # ),
     "meta-llama/Llama-3.1-8B-Instruct",
 ]
 
@@ -209,7 +207,8 @@ if __name__ == "__main__":
     # Run generation
     for model_id in model_ids:
         dataset_name = check_if_huggingface_dataset_exists(
-            f"{DATASET_HUGGINGFACE_WORKSPACE}/llmtwin", default_value="mlabonne/llmtwin"
+            f"{DATASET_HUGGINGFACE_WORKSPACE}/Nigeria_tax_law_instruct_datasets",
+            default_value=f"{DATASET_HUGGINGFACE_WORKSPACE}/Nigeria_tax_law_instruct_datasets"
         )
         generate_answers(model_id, dataset_name=dataset_name)
 

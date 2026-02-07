@@ -16,7 +16,7 @@ evaluation_requirements_path = evaluation_dir / "requirements.txt"
 
 def run_evaluation_on_sagemaker(is_dummy: bool = True) -> None:
     assert settings.HUGGINGFACE_ACCESS_TOKEN, "Hugging Face access token is required."
-    assert settings.OPENAI_API_KEY, "OpenAI API key is required."
+    assert settings.ANTHROPIC_API_KEY, "Anthropic API key is required."
     assert settings.AWS_ARN_ROLE, "AWS ARN role is required."
 
     if not evaluation_dir.exists():
@@ -31,7 +31,7 @@ def run_evaluation_on_sagemaker(is_dummy: bool = True) -> None:
 
     env = {
         "HUGGING_FACE_HUB_TOKEN": settings.HUGGINGFACE_ACCESS_TOKEN,
-        "OPENAI_API_KEY": settings.OPENAI_API_KEY,
+        "ANTHROPIC_API_KEY": settings.ANTHROPIC_API_KEY,
         "DATASET_HUGGINGFACE_WORKSPACE": huggingface_user,
         "MODEL_HUGGINGFACE_WORKSPACE": huggingface_user,
     }
@@ -42,7 +42,7 @@ def run_evaluation_on_sagemaker(is_dummy: bool = True) -> None:
     hfp = HuggingFaceProcessor(
         role=settings.AWS_ARN_ROLE,
         instance_count=1,
-        instance_type="ml.g5.2xlarge",
+        instance_type="ml.g5.xlarge",
         transformers_version="4.36",
         pytorch_version="2.1",
         py_version="py310",

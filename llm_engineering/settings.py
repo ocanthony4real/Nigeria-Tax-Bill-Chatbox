@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     COMET_API_KEY: str | None = None
     COMET_PROJECT: str = "twin"
 
+    # Anthropic API (for evaluation)
+    ANTHROPIC_API_KEY: str | None = None
+
     # --- Required settings when deploying the code. ---
     # --- Otherwise, default values values work fine. ---
 

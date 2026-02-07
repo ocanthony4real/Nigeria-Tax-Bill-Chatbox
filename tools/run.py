@@ -12,6 +12,7 @@ from pipelines.pdf_data_etl import pdf_data_etl
 from pipelines.feature_engineering import feature_engineering
 from pipelines.generate_datasets import generate_datasets
 from pipelines.training import training
+from pipelines.evaluating import evaluating
 
 # from pipelines import (
 #      feature_engineering
@@ -89,6 +90,12 @@ Examples:
     default=False,
     help="Whether to run the training pipeline.",
 )
+@click.option(
+    "--run-evaluation",
+    is_flag=True,
+    default=False,
+    help="Whether to run the evaluation pipeline.",
+)
 
 def main(
     no_cache: bool = False,
@@ -97,6 +104,7 @@ def main(
     run_generate_instruct_datasets: bool = False,
     run_generate_preference_datasets: bool = False,
     run_training: bool = False,
+    run_evaluation: bool = False,
     export_settings: bool = False,
 ) -> None:
     assert (
@@ -105,6 +113,7 @@ def main(
         or run_generate_instruct_datasets
         or run_generate_preference_datasets
         or run_training
+        or run_evaluation
         or export_settings
     ), "Please specify an action to run."
 
@@ -149,6 +158,11 @@ def main(
         pipeline_args["run_name"] = f"generate_preference_datasets_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         generate_datasets.with_options(**pipeline_args)(**run_args_cd)
 
+    if run_evaluation:
+        run_args_eval = {}
+        pipeline_args["config_path"] = root_dir / "configs" / "evaluating.yaml"
+        pipeline_args["run_name"] = f"evaluation_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+        evaluating.with_options(**pipeline_args)(**run_args_eval)
 
 
 if __name__ == "__main__":

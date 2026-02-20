@@ -3,9 +3,12 @@ runtime: python311
 build:
   commands:
     pre-build:
-      - pip install --upgrade pip
+      - echo "Starting pre-build..."
+      - pip install --upgrade pip setuptools wheel
     build:
-      - pip install --no-cache-dir -r requirements.txt
+      - echo "Installing requirements..."
+      - pip install -r requirements.txt --no-cache-dir
+      - echo "Build complete!"
 run:
   command: python app.py
   network:

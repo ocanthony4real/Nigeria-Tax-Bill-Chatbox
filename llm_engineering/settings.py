@@ -18,7 +18,8 @@ class Settings(BaseSettings):
 
     # Comet ML (during training)
     COMET_API_KEY: str | None = None
-    COMET_PROJECT: str = "twin"
+    COMET_WORKSPACE: str = "ocanthony4real"
+    COMET_PROJECT: str = "Nigeria_tax_bill"
 
     # Anthropic API (for evaluation)
     ANTHROPIC_API_KEY: str | None = None
@@ -27,7 +28,7 @@ class Settings(BaseSettings):
     # --- Otherwise, default values values work fine. ---
 
     # MongoDB database
-    DATABASE_HOST: str = "mongodb://llm_engineering:llm_engineering@127.0.0.1:27017"
+    DATABASE_HOST: str | None = None
     DATABASE_NAME: str = "Laws"
 
     # Qdrant vector database
@@ -46,21 +47,21 @@ class Settings(BaseSettings):
     # --- Optional settings used to tweak the code. ---
 
     # AWS SageMaker
-    HF_MODEL_ID: str = "mlabonne/TwinLlama-3.1-8B-DPO"
-    GPU_INSTANCE_TYPE: str = "ml.g5.2xlarge"
+    HF_MODEL_ID: str = "ocanthony4real/NigeriaTaxLlama-3.1-8B"
+    GPU_INSTANCE_TYPE: str = "ml.g5.xlarge"
     SM_NUM_GPUS: int = 1
-    MAX_INPUT_LENGTH: int = 2048
-    MAX_TOTAL_TOKENS: int = 4096
-    MAX_BATCH_TOTAL_TOKENS: int = 4096
+    MAX_INPUT_LENGTH: int = 4096
+    MAX_TOTAL_TOKENS: int = 8192
+    MAX_BATCH_TOTAL_TOKENS: int = 8192
     COPIES: int = 1  # Number of replicas
     GPUS: int = 1  # Number of GPUs
     CPUS: int = 2  # Number of CPU cores
 
-    SAGEMAKER_ENDPOINT_CONFIG_INFERENCE: str = "twin"
-    SAGEMAKER_ENDPOINT_INFERENCE: str = "twin"
-    TEMPERATURE_INFERENCE: float = 0.01
-    TOP_P_INFERENCE: float = 0.9
-    MAX_NEW_TOKENS_INFERENCE: int = 150
+    SAGEMAKER_ENDPOINT_CONFIG_INFERENCE: str = "nigeria-tax-llama"
+    SAGEMAKER_ENDPOINT_INFERENCE: str = "nigeria-tax-llama"
+    TEMPERATURE_INFERENCE: float = 0.01  # Very low to reduce hallucination
+    TOP_P_INFERENCE: float = 0.7  # Lower to focus on most likely tokens
+    MAX_NEW_TOKENS_INFERENCE: int = 1024  # Increased for comprehensive answers
 
     # RAG
     TEXT_EMBEDDING_MODEL_ID: str = "sentence-transformers/all-MiniLM-L6-v2"

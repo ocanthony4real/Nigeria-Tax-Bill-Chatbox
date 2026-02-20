@@ -30,10 +30,11 @@ class EmbeddedChunk(VectorBaseDocument, ABC):
         """
         context = ""
         for i, chunk in enumerate(chunks):
+            # Try to get reference if available (for TaxBillEmbeddedChunk)
+            reference = getattr(chunk, 'get_reference', lambda: f"Page {getattr(chunk, 'page_number', 'N/A')}")()
             context += f"""
 Chunk {i + 1}:
-Platform: {chunk.platform}
-Author: {chunk.author_full_name}
+Reference: {reference}
 Content:
 {chunk.content}
 
@@ -48,11 +49,26 @@ class TaxBillEmbeddedChunk(EmbeddedChunk):
     file_name: str
     page_number: int
 
-    chapter: Optional[str] = None
-    part: Optional[str] = None
-    section: Optional[str] = None
+    # Hierarchical structure metadata
+    chapter: Optional[str] = None       # e.g., "Chapter 1", "Chapter 2"
+    part: Optional[str] = None          # e.g., "Part I", "Part IV"
+    section: Optional[str] = None       # e.g., "20" (from "20. Deductions allowed")
+    subsection: Optional[str] = None    # e.g., "(1)", "(1)(a)", "(2)(b)(ii)"
 
     class Config:
         name = "embedded_tax_bill_chunks"
         category = DataCategory.TAX_BILLS
         use_vector_index = True
+
+    def get_reference(self) -> str:
+        """Build a human-readable reference string for this chunk."""
+        parts = []
+        if self.chapter:
+            parts.append(self.chapter)
+        if self.part:
+            parts.append(self.part)
+        if self.section:
+            parts.append(f"Section {self.section}")
+        if self.subsection:
+            parts.append(self.subsection)
+        return ", ".join(parts) if parts else f"Page {self.page_number}"

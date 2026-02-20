@@ -1,114 +1,231 @@
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "IAMUserManagement",
-      "Effect": "Allow",
-      "Action": [
-        "iam:CreateUser",
-        "iam:DeleteUser",
-        "iam:AttachUserPolicy",
-        "iam:DetachUserPolicy",
-        "iam:CreateAccessKey",
-        "iam:DeleteAccessKey",
-        "iam:ListAttachedUserPolicies",
-        "iam:ListAccessKeys"
-      ],
-      "Resource": "arn:aws:iam::*:user/*"
-    },
-    {
-      "Sid": "SageMakerTraining",
-      "Effect": "Allow",
-      "Action": [
-        "sagemaker:CreateTrainingJob",
-        "sagemaker:DescribeTrainingJob",
-        "sagemaker:StopTrainingJob",
-        "sagemaker:ListTrainingJobs"
-      ],
-      "Resource": "arn:aws:sagemaker:*:*:training-job/*"
-    },
-    {
-      "Sid": "SageMakerModels",
-      "Effect": "Allow",
-      "Action": [
-        "sagemaker:CreateModel",
-        "sagemaker:DescribeModel",
-        "sagemaker:DeleteModel",
-        "sagemaker:ListModels"
-      ],
-      "Resource": "arn:aws:sagemaker:*:*:model/*"
-    },
-    {
-      "Sid": "SageMakerEndpoints",
-      "Effect": "Allow",
-      "Action": [
-        "sagemaker:CreateEndpoint",
-        "sagemaker:CreateEndpointConfig",
-        "sagemaker:DescribeEndpoint",
-        "sagemaker:DescribeEndpointConfig",
-        "sagemaker:DeleteEndpoint",
-        "sagemaker:DeleteEndpointConfig",
-        "sagemaker:InvokeEndpoint",
-        "sagemaker:UpdateEndpoint"
-      ],
-      "Resource": [
-        "arn:aws:sagemaker:*:*:endpoint/*",
-        "arn:aws:sagemaker:*:*:endpoint-config/*"
-      ]
-    },
-    {
-      "Sid": "ECRAccess",
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage",
-        "ecr:PutImage",
-        "ecr:InitiateLayerUpload",
-        "ecr:UploadLayerPart",
-        "ecr:CompleteLayerUpload",
-        "ecr:CreateRepository",
-        "ecr:DescribeRepositories"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "S3Access",
-      "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:DeleteObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::YOUR-BUCKET-NAME",
-        "arn:aws:s3:::YOUR-BUCKET-NAME/*"
-      ]
-    },
-    {
-      "Sid": "PassRoleToSageMaker",
-      "Effect": "Allow",
-      "Action": "iam:PassRole",
-      "Resource": "arn:aws:iam::*:role/*SageMaker*",
-      "Condition": {
-        "StringEquals": {
-          "iam:PassedToService": "sagemaker.amazonaws.com"
-        }
-      }
-    },
-    {
-      "Sid": "CloudWatchLogs",
-      "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents",
-        "logs:DescribeLogStreams",
-        "logs:GetLogEvents"
-      ],
-      "Resource": "arn:aws:logs:*:*:log-group:/aws/sagemaker/*"
-    }
-  ]
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "IAMUserManagement",
+			"Effect": "Allow",
+			"Action": [
+				"iam:CreateUser",
+				"iam:DeleteUser",
+				"iam:AttachUserPolicy",
+				"iam:DetachUserPolicy",
+				"iam:CreateAccessKey",
+				"iam:DeleteAccessKey",
+				"iam:ListAttachedUserPolicies",
+				"iam:ListAccessKeys"
+			],
+			"Resource": "arn:aws:iam::*:user/*"
+		},
+		{
+			"Sid": "IAMRoleManagement",
+			"Effect": "Allow",
+			"Action": [
+				"iam:CreateRole",
+				"iam:DeleteRole",
+				"iam:UpdateRole",
+				"iam:GetRole",
+				"iam:ListRoles",
+				"iam:AttachRolePolicy",
+				"iam:DetachRolePolicy",
+				"iam:PutRolePolicy",
+				"iam:DeleteRolePolicy",
+				"iam:ListAttachedRolePolicies",
+				"iam:ListRolePolicies"
+			],
+			"Resource": "arn:aws:iam::*:role/*"
+		},
+		{
+			"Sid": "IAMPolicyReadAccess",
+			"Effect": "Allow",
+			"Action": [
+				"iam:GetPolicy",
+				"iam:GetPolicyVersion",
+				"iam:ListPolicies",
+				"iam:ListPolicyVersions"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "PassRoleToAWSService",
+			"Effect": "Allow",
+			"Action": "iam:PassRole",
+			"Resource": "arn:aws:iam::*:role/*",
+			"Condition": {
+				"StringEquals": {
+					"iam:PassedToService": [
+						"sagemaker.amazonaws.com",
+						"ec2.amazonaws.com"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "SageMakerTraining",
+			"Effect": "Allow",
+			"Action": [
+				"sagemaker:CreateTrainingJob",
+				"sagemaker:DescribeTrainingJob",
+				"sagemaker:StopTrainingJob",
+				"sagemaker:ListTrainingJobs"
+			],
+			"Resource": "arn:aws:sagemaker:*:*:training-job/*"
+		},
+		{
+			"Sid": "SageMakerProcessing",
+			"Effect": "Allow",
+			"Action": [
+				"sagemaker:CreateProcessingJob",
+				"sagemaker:DescribeProcessingJob",
+				"sagemaker:StopProcessingJob",
+				"sagemaker:ListProcessingJobs"
+			],
+			"Resource": "arn:aws:sagemaker:*:*:processing-job/*"
+		},
+		{
+			"Sid": "SageMakerModels",
+			"Effect": "Allow",
+			"Action": [
+				"sagemaker:CreateModel",
+				"sagemaker:DescribeModel",
+				"sagemaker:DeleteModel",
+				"sagemaker:ListModels",
+				"sagemaker:AddTags"
+			],
+			"Resource": "arn:aws:sagemaker:*:*:model/*"
+		},
+		{
+			"Sid": "SageMakerEndpoints",
+			"Effect": "Allow",
+			"Action": [
+				"sagemaker:CreateEndpoint",
+				"sagemaker:CreateEndpointConfig",
+				"sagemaker:DescribeEndpoint",
+				"sagemaker:DescribeEndpointConfig",
+				"sagemaker:DeleteEndpoint",
+				"sagemaker:DeleteEndpointConfig",
+				"sagemaker:InvokeEndpoint",
+				"sagemaker:UpdateEndpoint",
+				"sagemaker:UpdateEndpointWeightsAndCapacities",
+				"sagemaker:AddTags",
+				"sagemaker:ListTags"
+			],
+			"Resource": [
+				"arn:aws:sagemaker:*:*:endpoint/*",
+				"arn:aws:sagemaker:*:*:endpoint-config/*"
+			]
+		},
+		{
+			"Sid": "ECRAccess",
+			"Effect": "Allow",
+			"Action": [
+				"ecr:GetAuthorizationToken",
+				"ecr:BatchCheckLayerAvailability",
+				"ecr:GetDownloadUrlForLayer",
+				"ecr:BatchGetImage",
+				"ecr:PutImage",
+				"ecr:InitiateLayerUpload",
+				"ecr:UploadLayerPart",
+				"ecr:CompleteLayerUpload",
+				"ecr:CreateRepository",
+				"ecr:DescribeRepositories"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "S3BucketManagement",
+			"Effect": "Allow",
+			"Action": [
+				"s3:CreateBucket",
+				"s3:ListBucket",
+				"s3:GetBucketLocation"
+			],
+			"Resource": "arn:aws:s3:::sagemaker-*"
+		},
+		{
+			"Sid": "S3ObjectAccess",
+			"Effect": "Allow",
+			"Action": [
+				"s3:GetObject",
+				"s3:PutObject",
+				"s3:DeleteObject"
+			],
+			"Resource": "arn:aws:s3:::sagemaker-*"
+		},
+		{
+			"Sid": "CloudWatchLogs",
+			"Effect": "Allow",
+			"Action": [
+				"logs:CreateLogGroup",
+				"logs:CreateLogStream",
+				"logs:PutLogEvents",
+				"logs:DescribeLogStreams",
+				"logs:GetLogEvents"
+			],
+			"Resource": "arn:aws:logs:*:*:log-group:/aws/sagemaker/*"
+		},
+		{
+			"Sid": "SageMakerAutoscaling",
+			"Effect": "Allow",
+			"Action": [
+				"application-autoscaling:RegisterScalableTarget",
+				"application-autoscaling:DeregisterScalableTarget",
+				"application-autoscaling:PutScalingPolicy",
+				"application-autoscaling:DeleteScalingPolicy",
+				"application-autoscaling:DescribeScalableTargets",
+				"application-autoscaling:DescribeScalingPolicies",
+				"application-autoscaling:DescribeScalingActivities"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "AutoscalingServiceLinkedRole",
+			"Effect": "Allow",
+			"Action": "iam:CreateServiceLinkedRole",
+			"Resource": "arn:aws:iam::*:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint",
+			"Condition": {
+				"StringLike": {
+					"iam:AWSServiceName": "sagemaker.application-autoscaling.amazonaws.com"
+				}
+			}
+		},
+		{
+			"Sid": "CloudWatchAlarmsForAutoscaling",
+			"Effect": "Allow",
+			"Action": [
+				"cloudwatch:PutMetricAlarm",
+				"cloudwatch:DeleteAlarms",
+				"cloudwatch:DescribeAlarms"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "AppRunnerAccess",
+			"Effect": "Allow",
+			"Action": [
+				"apprunner:CreateService",
+				"apprunner:DeleteService",
+				"apprunner:UpdateService",
+				"apprunner:DescribeService",
+				"apprunner:ListServices",
+				"apprunner:ListOperations",
+				"apprunner:StartDeployment",
+				"apprunner:PauseService",
+				"apprunner:ResumeService",
+				"apprunner:TagResource",
+				"apprunner:ListTagsForResource"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "AppRunnerServiceLinkedRole",
+			"Effect": "Allow",
+			"Action": "iam:CreateServiceLinkedRole",
+			"Resource": "arn:aws:iam::*:role/aws-service-role/apprunner.amazonaws.com/AWSServiceRoleForAppRunner",
+			"Condition": {
+				"StringLike": {
+					"iam:AWSServiceName": "apprunner.amazonaws.com"
+				}
+			}
+		}
+	]
 }

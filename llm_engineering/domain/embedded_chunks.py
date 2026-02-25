@@ -61,14 +61,18 @@ class TaxBillEmbeddedChunk(EmbeddedChunk):
         use_vector_index = True
 
     def get_reference(self) -> str:
-        """Build a human-readable reference string for this chunk."""
+        """Build a human-readable reference string for this chunk.
+        Format: Section X, Subsection Y (Page Z)
+        """
         parts = []
-        if self.chapter:
-            parts.append(self.chapter)
-        if self.part:
-            parts.append(self.part)
         if self.section:
             parts.append(f"Section {self.section}")
         if self.subsection:
-            parts.append(self.subsection)
-        return ", ".join(parts) if parts else f"Page {self.page_number}"
+            parts.append(f"Subsection {self.subsection}")
+
+        # Always include page number at the end
+        ref = ", ".join(parts) if parts else ""
+        if ref:
+            return f"{ref} (Page {self.page_number})"
+        else:
+            return f"Page {self.page_number}"

@@ -5,7 +5,6 @@ This retriever searches the embedded_tax_bill_chunks collection in Qdrant
 and returns chunks with full structural metadata (chapter, part, section, subsection).
 """
 
-import concurrent.futures
 from typing import List, Optional
 
 from loguru import logger
@@ -29,7 +28,6 @@ from llm_engineering.application.preprocessing.dispatchers import EmbeddingDispa
 from llm_engineering.domain.embedded_chunks import TaxBillEmbeddedChunk
 from llm_engineering.domain.queries import Query
 
-from .query_expanison import QueryExpansion
 from .reranking import Reranker
 
 
@@ -40,20 +38,17 @@ class TaxBillRetriever:
     Features:
     - Searches only the tax bill chunks collection
     - Preserves structural metadata (chapter, part, section, subsection)
-    - Supports query expansion for better recall
-    - Reranks results for better precision
+    - Reranks results for better precision using CrossEncoder
     """
 
     def __init__(self, mock: bool = False) -> None:
-        self._query_expander = QueryExpansion(mock=mock)
         self._reranker = Reranker(mock=mock)
 
     @opik.track(name="TaxBillRetriever.search")
     def search(
         self,
         query: str,
-        k: int = 10,  # Increased for comprehensive context
-        expand_to_n_queries: int = 5,  # Increased for better recall
+        k: int = 10,
     ) -> List[TaxBillEmbeddedChunk]:
         """
         Search for relevant tax bill chunks.
@@ -61,43 +56,19 @@ class TaxBillRetriever:
         Args:
             query: The user's question
             k: Number of chunks to return
-            expand_to_n_queries: Number of query variations to generate
 
         Returns:
             List of TaxBillEmbeddedChunk with structural metadata
         """
         query_model = Query.from_str(query)
 
-        # Expand query for better recall
-        n_generated_queries = self._query_expander.generate(
-            query_model, expand_to_n=expand_to_n_queries
-        )
-        logger.info(f"Generated {len(n_generated_queries)} search queries for tax bill retrieval.")
-
-        # Search with all query variations in parallel
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            search_tasks = [
-                executor.submit(self._search_tax_bills, _query_model, k * 2)
-                for _query_model in n_generated_queries
-            ]
-
-            all_chunks = []
-            for task in concurrent.futures.as_completed(search_tasks):
-                all_chunks.extend(task.result())
-
-        # Deduplicate by chunk ID
-        seen_ids = set()
-        unique_chunks = []
-        for chunk in all_chunks:
-            if chunk.id not in seen_ids:
-                seen_ids.add(chunk.id)
-                unique_chunks.append(chunk)
-
-        logger.info(f"Retrieved {len(unique_chunks)} unique tax bill chunks.")
+        # Search with embedding similarity (retrieve more for reranking)
+        chunks = self._search_tax_bills(query_model, limit=k * 3)
+        logger.info(f"Retrieved {len(chunks)} tax bill chunks.")
 
         # Rerank and return top k
-        if len(unique_chunks) > 0:
-            reranked_chunks = self._rerank(query, unique_chunks, keep_top_k=k)
+        if len(chunks) > 0:
+            reranked_chunks = self._rerank(query, chunks, keep_top_k=k)
         else:
             reranked_chunks = []
 

@@ -1,7 +1,16 @@
 from loguru import logger
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from zenml.client import Client
-from zenml.exceptions import EntityExistsError
+
+# ZenML is optional - only needed for pipeline orchestration
+try:
+    from zenml.client import Client
+    from zenml.exceptions import EntityExistsError
+    HAS_ZENML = True
+except Exception:
+    # Catch all exceptions (ImportError, RuntimeError from pydantic conflicts, etc.)
+    HAS_ZENML = False
+    Client = None
+    EntityExistsError = None
 
 
 class Settings(BaseSettings):
@@ -64,7 +73,7 @@ class Settings(BaseSettings):
     MAX_NEW_TOKENS_INFERENCE: int = 1024  # Increased for comprehensive answers
 
     # RAG
-    TEXT_EMBEDDING_MODEL_ID: str = "sentence-transformers/all-MiniLM-L6-v2"
+    TEXT_EMBEDDING_MODEL_ID: str = "BAAI/bge-large-en-v1.5"
     RERANKING_CROSS_ENCODER_MODEL_ID: str = "cross-encoder/ms-marco-MiniLM-L-4-v2"
     RAG_MODEL_DEVICE: str = "cpu"
 
@@ -93,29 +102,32 @@ class Settings(BaseSettings):
     @classmethod
     def load_settings(cls) -> "Settings":
         """
-        Tries to load the settings from the ZenML secret store. If the secret does not exist, it initializes the settings from the .env file and default values.
+        Tries to load the settings from the ZenML secret store. If the secret does not exist or ZenML is not installed,
+        it initializes the settings from the .env file and default values.
 
         Returns:
             Settings: The initialized settings object.
         """
+        if HAS_ZENML:
+            try:
+                logger.info("Loading settings from the ZenML secret store.")
+                settings_secrets = Client().get_secret("settings")
+                return Settings(**settings_secrets.secret_values)
+            except (RuntimeError, KeyError):
+                logger.warning(
+                    "Failed to load settings from the ZenML secret store. Defaulting to loading the settings from the '.env' file."
+                )
 
-        try:
-            logger.info("Loading settings from the ZenML secret store.")
-
-            settings_secrets = Client().get_secret("settings")
-            settings = Settings(**settings_secrets.secret_values)
-        except (RuntimeError, KeyError):
-            logger.warning(
-                "Failed to load settings from the ZenML secret store. Defaulting to loading the settings from the '.env' file."
-            )
-            settings = Settings()
-
-        return settings
+        logger.info("Loading settings from environment variables.")
+        return Settings()
 
     def export(self) -> None:
         """
         Exports the settings to the ZenML secret store.
         """
+        if not HAS_ZENML:
+            logger.warning("ZenML not installed. Cannot export settings to secret store.")
+            return
 
         env_vars = settings.model_dump()
         for key, value in env_vars.items():

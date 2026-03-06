@@ -1,8 +1,12 @@
-name: Build and Push Docker Image
+name: Build and Push Web App to ECR
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/docker-ecr.yml'
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -27,11 +31,12 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Docker image
+        working-directory: web
         run: |
           docker build \
-            -t ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:${{ github.sha }} \
-            -t ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:latest \
+            -t ${{ steps.login-ecr.outputs.registry }}/nigeria-tax-chatbot:${{ github.sha }} \
+            -t ${{ steps.login-ecr.outputs.registry }}/nigeria-tax-chatbot:latest \
             .
 
-          docker push ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:${{ github.sha }}
-          docker push ${{ steps.login-ecr.outputs.registry }}/nigeria_tax_bill:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/nigeria-tax-chatbot:${{ github.sha }}
+          docker push ${{ steps.login-ecr.outputs.registry }}/nigeria-tax-chatbot:latest

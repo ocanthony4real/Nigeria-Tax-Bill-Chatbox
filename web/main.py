@@ -382,6 +382,20 @@ async def health_check():
     return {"status": "healthy"}
 
 
+@app.get("/api/debug")
+async def debug_config():
+    """Debug endpoint to check configuration."""
+    return {
+        "aws_region": AWS_REGION,
+        "sagemaker_endpoint": SAGEMAKER_ENDPOINT,
+        "qdrant_url_set": bool(QDRANT_URL),
+        "qdrant_url_preview": QDRANT_URL[:30] + "..." if QDRANT_URL else "NOT SET",
+        "qdrant_api_key_set": bool(QDRANT_API_KEY),
+        "aws_access_key_set": bool(AWS_ACCESS_KEY),
+        "aws_secret_key_set": bool(AWS_SECRET_KEY),
+    }
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """

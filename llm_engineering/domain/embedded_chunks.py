@@ -31,7 +31,7 @@ class EmbeddedChunk(VectorBaseDocument, ABC):
         context = ""
         for i, chunk in enumerate(chunks):
             # Try to get reference if available (for TaxBillEmbeddedChunk)
-            reference = getattr(chunk, 'get_reference', lambda: f"Page {getattr(chunk, 'page_number', 'N/A')}")()
+            reference = getattr(chunk, 'get_reference', lambda: f"pg. {getattr(chunk, 'page_number', 'N/A')}")()
             context += f"""
 Chunk {i + 1}:
 Reference: {reference}
@@ -62,7 +62,7 @@ class TaxBillEmbeddedChunk(EmbeddedChunk):
 
     def get_reference(self) -> str:
         """Build a human-readable reference string for this chunk.
-        Format: Section X, Subsection Y (Page Z)
+        Format: Section X, Subsection Y (p. Z)
         """
         parts = []
         if self.section:
@@ -73,6 +73,6 @@ class TaxBillEmbeddedChunk(EmbeddedChunk):
         # Always include page number at the end
         ref = ", ".join(parts) if parts else ""
         if ref:
-            return f"{ref} (Page {self.page_number})"
+            return f"{ref} (p. {self.page_number})"
         else:
-            return f"Page {self.page_number}"
+            return f"pg. {self.page_number}"

@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     # --- Optional settings used to tweak the code. ---
 
     # AWS SageMaker
-    HF_MODEL_ID: str = "ocanthony4real/NigeriaTaxLlama-3.1-8B"
+    HF_MODEL_ID: str = "ocanthony4real/NigeriaTaxLlama-3.1-8B-RAG-v3"
     GPU_INSTANCE_TYPE: str = "ml.g5.xlarge"
     SM_NUM_GPUS: int = 1
     MAX_INPUT_LENGTH: int = 4096
@@ -66,8 +66,8 @@ class Settings(BaseSettings):
     GPUS: int = 1  # Number of GPUs
     CPUS: int = 2  # Number of CPU cores
 
-    SAGEMAKER_ENDPOINT_CONFIG_INFERENCE: str = "nigeria-tax-llama"
-    SAGEMAKER_ENDPOINT_INFERENCE: str = "nigeria-tax-llama"
+    SAGEMAKER_ENDPOINT_CONFIG_INFERENCE: str = "nigeria-tax-llama-v3"
+    SAGEMAKER_ENDPOINT_INFERENCE: str = "nigeria-tax-llama-v3"
     TEMPERATURE_INFERENCE: float = 0.01  # Very low to reduce hallucination
     TOP_P_INFERENCE: float = 0.7  # Lower to focus on most likely tokens
     MAX_NEW_TOKENS_INFERENCE: int = 1024  # Increased for comprehensive answers

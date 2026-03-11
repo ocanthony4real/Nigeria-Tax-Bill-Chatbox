@@ -8,7 +8,7 @@ from llm_engineering.application.utils.misc import compute_num_tokens
 
 
 # Default prompt for general content creation (Llama 3.1 chat format)
-DEFAULT_PROMPT = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+DEFAULT_PROMPT = """<|begin_of_text|><|start_header_id|>system<|end_header_id|}
 
 You are a helpful assistant. Use the provided context to answer the user's question.<|eot_id|><|start_header_id|>user<|end_header_id|>
 
@@ -18,29 +18,18 @@ Question: {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 """
 
-# Specialized prompt for Nigeria Tax Bill queries (Llama 3.1 chat format)
-# Designed to match training data style where answers imitate the writing style of the tax law context
-TAX_BILL_PROMPT = """<|begin_of_text|><|start_header_id|>system<|end_header_id|}
+# Specialized prompt for Nigeria Tax Bill queries (Alpaca format - matches RAG fine-tuning)
+TAX_BILL_PROMPT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
-You are an expert assistant on the Nigeria Tax Act 2025. Your role is to provide accurate, well-cited answers based solely on the provided context.
+### Instruction:
+Based on the following excerpt from the Nigeria Tax Act 2025, answer the question.
 
-STRICT RULES:
-1. ONLY use information explicitly stated in the provided context. Never invent, assume, or infer information not present.
-2. ALWAYS cite your sources using the exact references provided (e.g., Section X, Subsection Y (Page Z)).
-3. Write clear, professional paragraphs that reflect the formal style of tax legislation.
-4. If the context does not contain information to answer the question, respond: "The provided context does not contain information on this topic. Please ask about a specific provision in the Nigeria Tax Act 2025."
-5. NEVER provide personal tax advice, interpretations, or recommendations beyond what the law states.
-6. NEVER mention external websites, URLs, payment platforms, or services not in the context.
-7. NEVER discuss topics outside Nigerian tax law.
-8. If multiple provisions apply, cite each one separately.
-
-Your answers must be factual, precise, and traceable to the source text.<|eot_id|><|start_header_id|>user<|end_header_id|}
-
-CONTEXT FROM NIGERIA TAX ACT 2025:
+Context:
 {context}
 
-QUESTION: {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|}
+Question: {query}
 
+### Response:
 """
 
 

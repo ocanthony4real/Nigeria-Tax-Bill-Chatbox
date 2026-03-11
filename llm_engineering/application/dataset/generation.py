@@ -6,7 +6,7 @@ from langchain_core.language_models.fake import FakeListLLM
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import PromptTemplate
 from langchain.output_parsers import OutputFixingParser
-from langchain_ollama import ChatOllama
+from langchain_anthropic import ChatAnthropic
 
 from loguru import logger
 
@@ -73,7 +73,20 @@ Provide your response in JSON format.
             template_format="jinja2",
         )
 
-        prompt = prompt_template.format(extract=document.content)
+        # Extract metadata from document for accurate citations
+        page_number = getattr(document, 'page_number', 'N/A')
+        chapter = getattr(document, 'chapter', '') or 'N/A'
+        part = getattr(document, 'part', '') or 'N/A'
+        section = getattr(document, 'section', [])
+        section_str = ', '.join(section) if isinstance(section, list) and section else 'N/A'
+
+        prompt = prompt_template.format(
+            extract=document.content,
+            page_number=page_number,
+            chapter=chapter,
+            part=part,
+            section=section_str,
+        )
 
         words = prompt.split()
         max_tokens = getattr(settings, "OLLAMA_MAX_TOKEN_WINDOW", 2048)
@@ -111,10 +124,11 @@ Provide your response in JSON format.
         llm_instance = (
             FakeListLLM(responses=[constants.get_mocked_response(cls.dataset_type)])
             if mock
-            else ChatOllama(
-                model=settings.OLLAMA_MODEL,
+            else ChatAnthropic(
+                model="claude-3-haiku-20240307",
+                api_key=settings.ANTHROPIC_API_KEY,
                 temperature=0.7,
-                num_predict=2000 if cls.dataset_type == DatasetType.PREFERENCE else 1200,
+                max_tokens=1500,
             )
         )
 
@@ -127,28 +141,42 @@ Provide your response in JSON format.
 
         datasets = {}
 
+        # Rate limit handling: smaller batches with delays
+        import time
+        BATCH_SIZE = 4  # Reduced to avoid rate limits
+        DELAY_BETWEEN_BATCHES = 15  # seconds - to stay under 10K tokens/min
+
         for category, category_prompts in prompts.items():
             langchain_prompts = [_to_langchain(p) for p in category_prompts]
-            batches = utils.misc.batch(langchain_prompts, size=24)
+            batches_list = list(utils.misc.batch(langchain_prompts, size=BATCH_SIZE))
+            total_batches = len(batches_list)
 
             flattened_samples: list = []
 
-            for batch in batches:
+            for batch_idx, batch in enumerate(batches_list):
+                logger.info(f"Processing batch {batch_idx + 1}/{total_batches}...")
                 try:
                     parsed_batches = chain.batch(batch, stop=None)
+
+                    # Delay between batches to avoid rate limits
+                    if batch_idx < total_batches - 1:
+                        logger.info(f"Waiting {DELAY_BETWEEN_BATCHES}s to avoid rate limits...")
+                        time.sleep(DELAY_BETWEEN_BATCHES)
 
                     for parsed in parsed_batches:
                         if isinstance(parsed, list):
                             for item in parsed:
-                                flattened_samples.append(
-                                    item if isinstance(item, sample_type)
-                                    else sample_type.model_validate(item)
-                                )
+                                validated = item if isinstance(item, sample_type) else sample_type.model_validate(item)
+                                flattened_samples.append(validated)
+                                # Log first sample to verify context field
+                                if len(flattened_samples) == 1:
+                                    logger.info(f"=== FIRST SAMPLE (verifying context) ===")
+                                    logger.info(f"instruction: {validated.instruction[:100]}...")
+                                    logger.info(f"context: {validated.context[:100] if hasattr(validated, 'context') else 'NO CONTEXT FIELD'}...")
+                                    logger.info(f"answer: {validated.answer[:100]}...")
                         else:
-                            flattened_samples.append(
-                                parsed if isinstance(parsed, sample_type)
-                                else sample_type.model_validate(parsed)
-                            )
+                            validated = parsed if isinstance(parsed, sample_type) else sample_type.model_validate(parsed)
+                            flattened_samples.append(validated)
 
                 except OutputParserException:
                     logger.exception(f"Failed to parse JSON output for category {category}")
@@ -194,23 +222,38 @@ Provide your response in JSON format.
 class InstructionDatasetGenerator(DatasetGenerator):
     dataset_type = DatasetType.INSTRUCTION
 
-    prompt_template_str = """Based on the following extract, generate five instruction-answer pairs. Each instruction \
-must ask to write about a specific topic contained in the context. Each answer \
-must provide a relevant paragraph based on the information found in the \
-context. Only use concepts from the context to generate the instructions. \
-Instructions must never explicitly mention a context, a system, a course, or an extract. \
-Instructions must be self-contained and general. \
-Answers must imitate the writing style of the context. \
-    
-Example instruction: Explain the concept of tax. \
-Example answer: Tax is a compulsory contribution to state revenue, \
-levied by the government on workers' income  \
-and business profits, or added to the cost of some goods, services, and transactions. \
+    prompt_template_str = """Based on the following extract from the Nigeria Tax Act 2025, generate five instruction-context-answer triples for RAG training.
+
+IMPORTANT METADATA (use these exact values for citations):
+- Page: {{page_number}}
+- Chapter: {{chapter}}
+- Part: {{part}}
+- Section(s): {{section}}
+
+Each triple must contain:
+1. instruction: A clear question about a specific topic in the extract
+2. context: The exact relevant excerpt with citation using the metadata above, format: "[Section X (p. {{page_number}})] <quote>"
+3. answer: A response that quotes from context and cites using the EXACT metadata provided above
+
+Rules:
+- Use the EXACT page number ({{page_number}}) provided in metadata for all citations
+- Use the EXACT section(s) ({{section}}) provided in metadata for all citations
+- The context must be a direct quote from the extract with proper citation
+- The answer must cite using format: "According to Section X (p. {{page_number}})..."
+- Instructions must be self-contained questions (never mention "the extract" or "the context")
+- Keep context excerpts focused and relevant (not too long)
+
+Example using the metadata above:
+{
+    "instruction": "What is the VAT rate in Nigeria?",
+    "context": "[Section {{section}} (p. {{page_number}})] VAT shall be charged at the rate of 7.5 percent on the value of all taxable goods and services.",
+    "answer": "According to Section {{section}} (p. {{page_number}}), the VAT rate in Nigeria is 7.5 percent, charged on the value of all taxable goods and services."
+}
 
 Structure the answer in JSON format, ready to be loaded in Python by json.loads(), as a list of objects.
 Do not add any extra characters and provide your response in JSON format with the following structure:
 [
-    {"instruction": "...", "answer": "..."},
+    {"instruction": "...", "context": "...", "answer": "..."},
     ...
 ]
 

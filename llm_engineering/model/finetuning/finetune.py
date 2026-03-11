@@ -64,7 +64,7 @@ PatchDPOTrainer()
 from typing import Any, List, Literal, Optional  # noqa: E402
 
 #import torch  # noqa
-from datasets import concatenate_datasets, load_dataset  # noqa: E402
+from datasets import load_dataset  # noqa: E402
 from huggingface_hub import HfApi  # noqa: E402
 from huggingface_hub.utils import RepositoryNotFoundError  # noqa: E402
 from transformers import TextStreamer, TrainingArguments  # noqa: E402
@@ -80,7 +80,12 @@ from unsloth.chat_templates import get_chat_template  # noqa: E402
 alpaca_template = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
 ### Instruction:
+Based on the following excerpt from the Nigeria Tax Act 2025, answer the question.
+
+Context:
 {}
+
+Question: {}
 
 ### Response:
 {}"""
@@ -152,15 +157,22 @@ def finetune(
 
         def format_samples_sft(examples):
             text = []
-            for instruction, output in zip(examples["instruction"], examples["output"], strict=False):
-                message = alpaca_template.format(instruction, output) + EOS_TOKEN
+            for context, instruction, output in zip(
+                examples["context"],
+                examples["instruction"],
+                examples["output"],
+                strict=False
+            ):
+                message = alpaca_template.format(context, instruction, output) + EOS_TOKEN
                 text.append(message)
 
             return {"text": text}
 
-        dataset1 = load_dataset(f"{dataset_huggingface_workspace}/Nigeria_tax_law_instruct_datasets", split="train")
-        dataset2 = load_dataset("mlabonne/FineTome-Alpaca-100k", split="train[:1000]")
-        dataset = concatenate_datasets([dataset1, dataset2])
+        # Load ONLY the Nigeria Tax dataset - no external datasets that would dilute
+        # the RAG format (context + citation style answers)
+        dataset = load_dataset(f"{dataset_huggingface_workspace}/Nigeria_tax_law_instruct_datasets", split="train")
+        print(f"Loaded Nigeria Tax dataset with {len(dataset)} samples (100% RAG format).")  # noqa
+
         if is_dummy:
             try:
                 dataset = dataset.select(range(400))
@@ -265,7 +277,8 @@ def finetune(
 def inference(
     model: Any,
     tokenizer: Any,
-    prompt: str = "Write a paragraph to introduce supervised fine-tuning.",
+    prompt: str = "What is the VAT rate in Nigeria?",
+    context: str = "[Section 95 (p. 45)] VAT shall be charged at the rate of 7.5 percent.",
     max_new_tokens: int = 256,
 ) -> None:
     """
@@ -287,7 +300,7 @@ def inference(
             print("This does not affect training - validate the saved model separately.")  # noqa
             return
 
-        message = alpaca_template.format(prompt, "")
+        message = alpaca_template.format(context, prompt, "")
         inputs = tokenizer([message], return_tensors="pt").to("cuda")
 
         text_streamer = TextStreamer(tokenizer)
@@ -372,10 +385,11 @@ if __name__ == "__main__":
             num_train_epochs=args.num_train_epochs,
             per_device_train_batch_size=args.per_device_train_batch_size,
             learning_rate=args.learning_rate,
+            is_dummy=args.is_dummy,
         )
         inference(model, tokenizer)
 
-        sft_output_model_repo_id = f"{args.model_output_huggingface_workspace}/NigeriaTaxLlama-3.1-8B"
+        sft_output_model_repo_id = f"{args.model_output_huggingface_workspace}/NigeriaTaxLlama-3.1-8B-RAG-v3"
         save_model(model, tokenizer, "model_sft", push_to_hub=True, repo_id=sft_output_model_repo_id)
     elif args.finetuning_type == "dpo":
         print("Starting DPO training...")  # noqa
@@ -390,12 +404,12 @@ if __name__ == "__main__":
             model_name=sft_base_model_repo_id,
             output_dir=str(output_dir_dpo),
             dataset_huggingface_workspace=args.dataset_huggingface_workspace,
-            num_train_epochs=1,
+            num_train_epochs=args.num_train_epochs,
             per_device_train_batch_size=args.per_device_train_batch_size,
             learning_rate=2e-6,
             is_dummy=args.is_dummy,
         )
         inference(model, tokenizer)
 
-        dpo_output_model_repo_id = f"{args.model_output_huggingface_workspace}/NigeriaTaxLlama-3.1-8B-DPO"
+        dpo_output_model_repo_id = f"{args.model_output_huggingface_workspace}/NigeriaTaxLlama-3.1-8B-DPO-v3"
         save_model(model, tokenizer, "model_dpo", push_to_hub=True, repo_id=dpo_output_model_repo_id)

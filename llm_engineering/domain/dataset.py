@@ -19,6 +19,7 @@ class DatasetType(Enum):
 
 class InstructDatasetSample(VectorBaseDocument):
     instruction: str
+    context: str  # RAG context - the relevant excerpt from the document
     answer: str
 
     class Config:
@@ -48,9 +49,11 @@ class InstructDataset(VectorBaseDocument):
     def to_huggingface(self) -> "Dataset":
         data = [sample.model_dump() for sample in self.samples]
 
-        return Dataset.from_dict(
-            {"instruction": [d["instruction"] for d in data], "output": [d["answer"] for d in data]}
-        )
+        return Dataset.from_dict({
+            "instruction": [d["instruction"] for d in data],
+            "context": [d["context"] for d in data],
+            "output": [d["answer"] for d in data]
+        })
 
 
 class TrainTestSplit(VectorBaseDocument):

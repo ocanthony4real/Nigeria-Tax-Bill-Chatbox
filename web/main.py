@@ -410,9 +410,13 @@ async def chat(request: ChatRequest):
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
+    error_id = str(uuid.uuid4())[:8].upper()
+
     try:
         # 1. Search for relevant chunks
+        print(f"[{error_id}] Step 1: Searching Qdrant...")
         chunks = search_tax_bill(request.query, k=request.k)
+        print(f"[{error_id}] Step 1 complete: Found {len(chunks)} chunks")
 
         if not chunks:
             return ChatResponse(
@@ -422,12 +426,16 @@ async def chat(request: ChatRequest):
             )
 
         # 2. Format context and extract metadata
+        print(f"[{error_id}] Step 2: Formatting context...")
         context = format_context(chunks)
         references = extract_references(chunks)
+        print(f"[{error_id}] Step 2 complete")
 
         # 3. Call LLM
+        print(f"[{error_id}] Step 3: Calling SageMaker...")
         prompt = TAX_BILL_PROMPT.format(context=context, query=request.query)
         answer = call_sagemaker(prompt)
+        print(f"[{error_id}] Step 3 complete: Got answer")
 
         # 4. Post-process: Fix "Section N/A" with actual section references
         answer = fix_section_na(answer, chunks)
@@ -439,8 +447,9 @@ async def chat(request: ChatRequest):
         )
 
     except Exception as e:
-        error_id = str(uuid.uuid4())[:8].upper()
+        import traceback
         print(f"[ERROR {error_id}] {datetime.now()}: {str(e)}")
+        print(f"[ERROR {error_id}] Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=500,
             detail=f"An error occurred processing your request. Reference: {error_id}"

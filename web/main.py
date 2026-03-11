@@ -153,16 +153,16 @@ def search_tax_bill(query: str, k: int = 10) -> list:
     # Embed the query
     query_vector = model.encode(query).tolist()
 
-    # Search Qdrant
-    results = client.search(
+    # Search Qdrant (using query_points for qdrant-client >= 1.7)
+    results = client.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=query_vector,
+        query=query_vector,
         limit=k,
     )
 
     # Extract chunk data
     chunks = []
-    for result in results:
+    for result in results.points:
         payload = result.payload
         chunks.append({
             "content": payload.get("content", ""),

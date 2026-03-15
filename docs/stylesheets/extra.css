@@ -1,0 +1,25 @@
+/* Minimal custom styles */
+
+.hero-section {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.hero-section .md-button {
+  margin: 0.5rem;
+}
+
+.demo-container {
+  margin: 2rem 0;
+}
+
+.footer-cta {
+  text-align: center;
+  padding: 3rem 0;
+  margin: 3rem 0;
+}
+
+.footer-note {
+  text-align: center;
+  padding: 2rem 0;
+}

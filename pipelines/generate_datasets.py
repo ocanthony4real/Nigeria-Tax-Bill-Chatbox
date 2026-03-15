@@ -1,3 +1,10 @@
+"""
+Dataset generation pipeline for creating training data.
+
+Generates instruction and preference datasets from cleaned documents
+for model fine-tuning.
+"""
+
 from zenml import pipeline
 
 from llm_engineering.domain.dataset import DatasetType

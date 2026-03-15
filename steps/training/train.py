@@ -1,3 +1,10 @@
+"""
+Model training step for the training pipeline.
+
+Launches fine-tuning jobs on AWS SageMaker with configurable
+hyperparameters and training methods (SFT/DPO).
+"""
+
 from zenml import step
 
 from llm_engineering.model.finetuning.sagemaker import run_finetuning_on_sagemaker

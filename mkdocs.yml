@@ -1,0 +1,150 @@
+site_name: Nigeria Tax Act 2025 - AI Legal Assistant
+site_description: AI-powered legal assistant for Nigerian tax law with RAG and fine-tuned LLaMA
+site_author: Anthony O.
+site_url: https://ocanthony4real.github.io/Nigeria-Tax-Bill-Chatbox/
+
+repo_name: ocanthony4real/Nigeria-Tax-Bill-Chatbox
+repo_url: https://github.com/ocanthony4real/Nigeria-Tax-Bill-Chatbox
+edit_uri: edit/main/docs/
+
+copyright: Copyright &copy; 2025 Anthony O.
+
+theme:
+  name: material
+  language: en
+
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.indexes
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - content.tabs.link
+    - content.tooltips
+    - toc.follow
+    - announce.dismiss
+
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ocanthony4real
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/yourprofile
+    - icon: fontawesome/solid/globe
+      link: https://r8eqkf6a2g.us-east-1.awsapprunner.com
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Configuration: getting-started/configuration.md
+  - Architecture:
+    - architecture/index.md
+    - Overview: architecture/overview.md
+    - RAG Pipeline: architecture/rag-pipeline.md
+    - Model Training: architecture/model-training.md
+    - Infrastructure: architecture/infrastructure.md
+  - Components:
+    - components/index.md
+    - LLM Engineering: components/llm-engineering.md
+    - Web Application: components/web-application.md
+    - ML Pipelines: components/ml-pipelines.md
+    - Domain Models: components/domain-models.md
+  - API Reference:
+    - api/index.md
+    - REST API: api/rest-api.md
+    - Python SDK: api/python-sdk.md
+  - Deployment:
+    - deployment/index.md
+    - AWS Setup: deployment/aws-setup.md
+    - Docker: deployment/docker.md
+    - CI/CD: deployment/cicd.md
+    - Cost Optimization: deployment/cost-optimization.md
+  - Evaluation:
+    - evaluation/index.md
+    - Model Performance: evaluation/model-performance.md
+    - Benchmarks: evaluation/benchmarks.md
+  - Resources:
+    - FAQ: faq.md
+    - Troubleshooting: troubleshooting.md
+    - Use Cases: use-cases.md
+    - Glossary: glossary.md
+  - Blog: blog/index.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md

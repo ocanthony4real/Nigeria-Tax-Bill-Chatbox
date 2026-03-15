@@ -1,10 +1,17 @@
+"""
+Document domain models for tax bill storage and representation.
+
+Defines the document structures used for storing and processing
+Nigerian tax bill pages extracted from PDF documents.
+"""
+
 from abc import ABC
 from typing import Optional, List
+
 from pydantic import Field, UUID4
-from .types import DataCategory
+
 from .base import NoSQLBaseDocument
 from .types import DataCategory
-#from llm_engineering.domain.documents import Document
 
 
 class Document(NoSQLBaseDocument, ABC):

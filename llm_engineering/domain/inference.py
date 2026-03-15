@@ -1,3 +1,10 @@
+"""
+Abstract base classes for model deployment and inference.
+
+Defines interfaces for deploying models and performing inference
+across different platforms (e.g., SageMaker, local).
+"""
+
 from abc import ABC, abstractmethod
 
 

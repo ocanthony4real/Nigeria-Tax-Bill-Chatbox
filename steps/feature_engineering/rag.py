@@ -1,3 +1,10 @@
+"""
+Chunking and embedding step for the RAG pipeline.
+
+Splits cleaned documents into chunks and generates embeddings
+for vector similarity search.
+"""
+
 from typing_extensions import Annotated
 from zenml import get_step_context, step
 
@@ -6,6 +13,7 @@ from llm_engineering.application.preprocessing import ChunkingDispatcher, Embedd
 from llm_engineering.domain.chunks import Chunk
 from llm_engineering.domain.embedded_chunks import EmbeddedChunk
 from tqdm import tqdm
+
 
 @step(enable_cache=False)
 def chunk_and_embed(

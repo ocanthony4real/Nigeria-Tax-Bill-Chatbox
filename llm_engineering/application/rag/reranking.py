@@ -1,3 +1,10 @@
+"""
+Reranking module for improving retrieval precision.
+
+Uses a cross-encoder model to rerank retrieved chunks based on
+relevance to the query.
+"""
+
 import opik
 
 from llm_engineering.application.networks import CrossEncoderModelSingleton
@@ -8,6 +15,7 @@ from .base import RAGStep
 
 
 class Reranker(RAGStep):
+    """Reranks retrieved chunks using a cross-encoder for better precision."""
     def __init__(self, mock: bool = False) -> None:
         super().__init__(mock=mock)
 

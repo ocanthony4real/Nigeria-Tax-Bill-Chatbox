@@ -1,3 +1,10 @@
+"""
+Chunk domain models for document segmentation.
+
+Defines chunk structures used to represent segmented portions
+of documents for embedding and retrieval.
+"""
+
 from abc import ABC
 from typing import Optional
 
@@ -5,7 +12,6 @@ from pydantic import UUID4, Field
 
 from llm_engineering.domain.base import VectorBaseDocument
 from llm_engineering.domain.types import DataCategory
-
 
 
 class Chunk(VectorBaseDocument, ABC):

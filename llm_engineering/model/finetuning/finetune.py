@@ -1,63 +1,25 @@
+"""
+Fine-tuning module for Nigeria Tax Bill LLM.
+
+This module handles SFT (Supervised Fine-Tuning) and DPO (Direct Preference Optimization)
+training for the LLaMA 3.1 8B model on Nigerian tax law Q&A pairs.
+"""
 
 import os
 from pathlib import Path
 
-# Hard-disable FlashAttention everywhere
+# Disable FlashAttention to ensure compatibility across GPU types
 os.environ["FLASH_ATTENTION_FORCE_DISABLE"] = "1"
 os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "1"
 os.environ["FLASH_ATTENTION_DISABLE"] = "1"
-
-# Prevent transformers from even trying
 os.environ["TRANSFORMERS_NO_FLASH_ATTENTION"] = "1"
 
-import torch
-# print("PyTorch version:", torch.__version__)
-# print("CUDA version:", torch.version.cuda)
-# print("Is CUDA available:", torch.cuda.is_available())
-
 import argparse
-
-# import subprocess, sys
-
-# subprocess.check_call([
-#     sys.executable, "-m", "pip", "install",
-#     "flash-attn==2.3.6",
-#     "--no-binary", "flash-attn",
-#     "--no-build-isolation",
-# ])
+import torch
 from unsloth import PatchDPOTrainer
 
-import torch
-
-try:
-    import flash_attn
-    print("flash-attn:", flash_attn.__version__)
-except Exception as e:
-    print("flash-attn FAILED:", e)
-
-try:
-    import xformers
-    print("xformers:", xformers.__version__)
-except Exception as e:
-    print("xformers FAILED:", e)
-
-try:
-    import bitsandbytes
-    print("bitsandbytes:", bitsandbytes.__version__)
-except Exception as e:
-    print("bitsandbytes FAILED:", e)
-
-print("Torch:", torch.__version__)
-print("CUDA available:", torch.cuda.is_available())
-print("CUDA version:", torch.version.cuda)
-print("GPU count:", torch.cuda.device_count())
-print("Torch:", torch.__version__)
-print("CUDA available:", torch.cuda.is_available())
-print("flash-attn:", flash_attn.__version__)
-print("xformers:", xformers.__version__)
-print("bitsandbytes:", bitsandbytes.__version__)
-
-
+# Log GPU environment for debugging
+print(f"PyTorch: {torch.__version__} | CUDA: {torch.version.cuda} | GPUs: {torch.cuda.device_count()}")
 
 PatchDPOTrainer()
 
@@ -101,6 +63,22 @@ def load_model(
     target_modules: List[str],
     chat_template: str,
 ) -> tuple:
+    """
+    Load a pre-trained model with LoRA adapters for fine-tuning.
+
+    Args:
+        model_name: HuggingFace model ID (e.g., 'meta-llama/Llama-3.1-8B')
+        max_seq_length: Maximum sequence length for training
+        load_in_4bit: Whether to use 4-bit quantization
+        lora_rank: LoRA adapter rank (higher = more parameters)
+        lora_alpha: LoRA scaling factor
+        lora_dropout: Dropout for LoRA layers
+        target_modules: Which attention modules to adapt
+        chat_template: Chat template format (e.g., 'chatml')
+
+    Returns:
+        tuple: (model, tokenizer) ready for training
+    """
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_name,
         max_seq_length=max_seq_length,
@@ -142,6 +120,26 @@ def finetune(
     beta: float = 0.5,  # Only for DPO
     is_dummy: bool = True,
 ) -> tuple:
+    """
+    Fine-tune a language model on Nigerian tax law data.
+
+    Supports two training modes:
+    - SFT (Supervised Fine-Tuning): Train on instruction-response pairs
+    - DPO (Direct Preference Optimization): Train on preference data
+
+    The training uses the Alpaca prompt template to match the RAG inference format,
+    ensuring the model learns to cite sections correctly (e.g., "According to Section X (p. Y)").
+
+    Args:
+        finetuning_type: 'sft' for supervised fine-tuning, 'dpo' for preference optimization
+        model_name: Base model to fine-tune
+        output_dir: Directory for checkpoints and logs
+        dataset_huggingface_workspace: HuggingFace workspace containing training data
+        is_dummy: If True, reduces dataset to 400 samples for testing
+
+    Returns:
+        tuple: (trained_model, tokenizer)
+    """
     model, tokenizer = load_model(
         model_name, max_seq_length, load_in_4bit, lora_rank, lora_alpha, lora_dropout, target_modules, chat_template
     )

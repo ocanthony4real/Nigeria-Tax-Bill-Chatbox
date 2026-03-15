@@ -1,8 +1,14 @@
+"""
+PDF extraction step for Nigerian tax bill documents.
+
+Extracts text from PDF files using pdfminer with OCR fallback via Tesseract
+for pages with limited extractable text.
+"""
+
 from zenml import step
 from pathlib import Path
 from typing import List
 import logging
-from datetime import datetime
 from uuid import UUID
 import re
 

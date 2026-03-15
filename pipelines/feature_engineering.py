@@ -1,11 +1,23 @@
+"""
+Feature engineering pipeline for document processing.
+
+Handles document cleaning, chunking, embedding, and vector database loading.
+"""
+
 from zenml import pipeline
 
 from steps import feature_engineering as fe_steps
 
 
-
 @pipeline
 def feature_engineering(pdf_names: list[str], wait_for: str | list[str] | None = None) -> list[str]:
+    """
+    Process raw documents into embeddings and load to vector store.
+
+    Args:
+        pdf_names: List of PDF file names to process
+        wait_for: Optional pipeline step(s) to wait for before starting
+    """
     raw_documents = fe_steps.query_data_warehouse(pdf_names, after=wait_for)
 
     cleaned_documents = fe_steps.clean_documents(raw_documents)

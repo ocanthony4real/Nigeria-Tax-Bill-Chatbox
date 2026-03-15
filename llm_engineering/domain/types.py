@@ -1,3 +1,10 @@
+"""
+Domain type definitions and enumerations.
+
+Defines data categories used throughout the application for
+organizing and classifying different types of data.
+"""
+
 from enum import StrEnum
 
 

@@ -1,3 +1,10 @@
+"""
+Query domain models for search and retrieval.
+
+Defines query structures used for vector similarity search
+in the RAG pipeline.
+"""
+
 from pydantic import UUID4, Field
 
 from llm_engineering.domain.base import VectorBaseDocument

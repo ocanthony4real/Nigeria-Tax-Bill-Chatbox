@@ -1,3 +1,9 @@
+"""
+Model training pipeline for fine-tuning LLaMA on tax law Q&A.
+
+Supports SFT (Supervised Fine-Tuning) and DPO training methods.
+"""
+
 from zenml import pipeline
 
 from steps import training as training_steps

@@ -1,3 +1,10 @@
+"""
+Prompt domain models for LLM interactions.
+
+Defines prompt templates and structures used for generating
+training data and LLM queries.
+"""
+
 from llm_engineering.domain.base import VectorBaseDocument
 from llm_engineering.domain.cleaned_documents import CleanedDocument
 from llm_engineering.domain.types import DataCategory

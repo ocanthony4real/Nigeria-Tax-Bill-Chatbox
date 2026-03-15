@@ -1,3 +1,10 @@
+"""
+Document cleaning step for the feature engineering pipeline.
+
+Dispatches raw documents to appropriate cleaning handlers
+based on document type.
+"""
+
 from typing_extensions import Annotated
 from zenml import get_step_context, step
 

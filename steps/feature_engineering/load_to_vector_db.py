@@ -1,3 +1,9 @@
+"""
+Vector database loading step for the feature engineering pipeline.
+
+Loads embedded documents into Qdrant vector store in batches.
+"""
+
 from loguru import logger
 from typing_extensions import Annotated
 from zenml import step

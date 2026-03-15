@@ -1,3 +1,10 @@
+"""
+Cleaned document domain models.
+
+Defines structures for normalized and cleaned versions of raw documents,
+ready for chunking and embedding.
+"""
+
 from abc import ABC
 from typing import Optional
 

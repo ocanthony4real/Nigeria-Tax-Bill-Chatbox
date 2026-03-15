@@ -1,3 +1,10 @@
+"""
+Dataset domain models for training data management.
+
+Defines instruction and preference dataset structures used for
+SFT (Supervised Fine-Tuning) and DPO (Direct Preference Optimization) training.
+"""
+
 from enum import Enum
 
 from loguru import logger

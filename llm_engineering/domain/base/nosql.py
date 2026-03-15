@@ -1,3 +1,10 @@
+"""
+Base NoSQL document model with MongoDB integration.
+
+Provides a base class for documents stored in MongoDB with common
+CRUD operations and serialization utilities.
+"""
+
 import uuid
 from abc import ABC
 from typing import Generic, Type, TypeVar, List
@@ -5,7 +12,6 @@ from typing import Generic, Type, TypeVar, List
 from loguru import logger
 from pydantic import UUID4, BaseModel, Field
 from pymongo import errors
-from uuid import UUID
 
 from llm_engineering.domain.exceptions import ImproperlyConfigured
 from llm_engineering.infrastructure.db.mongo import connection
@@ -18,8 +24,9 @@ T = TypeVar("T", bound="NoSQLBaseDocument")
 
 
 class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
+    """Base class for MongoDB documents with UUID identification."""
+
     id: UUID4 = Field(default_factory=uuid.uuid4)
-    #id: UUID
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, self.__class__):
@@ -116,15 +123,8 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
 
     @classmethod
     def get_or_create(cls: Type[T], **filter_options) -> T:
+        """Retrieve an existing document or create a new one."""
         collection = _database[cls.get_collection_name()]
-
-        # 🔍 DEBUG: show collection info immediately after retrieval
-        print(
-            f"[DEBUG] Retrieved collection: "
-            f"name={collection.name}, "
-            f"database={collection.database.name}, "
-            f"filter_options={filter_options}"
-        )
 
         try:
             instance = collection.find_one(filter_options)
@@ -140,19 +140,6 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
                 f"Failed to retrieve document with filter options: {filter_options}"
             )
             raise
-
-
-    # @classmethod
-    # def bulk_insert(cls: Type[T], documents: list[T], **kwargs) -> bool:
-    #     collection = _database[cls.get_collection_name()]
-    #     try:
-    #         collection.insert_many(doc.to_mongo(**kwargs) for doc in documents)
-
-    #         return True
-    #     except (errors.WriteError, errors.BulkWriteError):
-    #         logger.error(f"Failed to insert documents of type {cls.__name__}")
-
-    #         return False
 
     @classmethod
     def find(cls: Type[T], **filter_options) -> T | None:
@@ -182,12 +169,3 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
         except errors.OperationFailure:
             logger.error("Failed to retrieve documents")
             return []
-
-    # @classmethod
-    # def get_collection_name(cls: Type[T]) -> str:
-    #     if not hasattr(cls, "Settings") or not hasattr(cls.Settings, "name"):
-    #         raise ImproperlyConfigured(
-    #             "Document should define an Settings configuration class with the name of the collection."
-    #         )
-
-    #     return cls.Settings.name

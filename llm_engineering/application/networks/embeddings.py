@@ -1,3 +1,10 @@
+"""
+Embedding and cross-encoder model singletons for the RAG pipeline.
+
+Provides lazy-loaded, singleton instances of the embedding model
+(BAAI/bge-large-en-v1.5) and cross-encoder model for reranking.
+"""
+
 from functools import cached_property
 from pathlib import Path
 from typing import Optional

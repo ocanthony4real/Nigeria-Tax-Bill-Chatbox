@@ -1,3 +1,10 @@
+"""
+Application settings for the Nigeria Tax Bill Chatbot.
+
+Settings are loaded from environment variables (.env file) with sensible defaults.
+ZenML integration is optional for pipeline orchestration.
+"""
+
 from loguru import logger
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

@@ -1,3 +1,10 @@
+"""
+Base vector document model with Qdrant integration.
+
+Provides a base class for documents stored in Qdrant vector database
+with embedding support and similarity search operations.
+"""
+
 import uuid
 from abc import ABC
 from typing import Any, Callable, Dict, Generic, Type, TypeVar

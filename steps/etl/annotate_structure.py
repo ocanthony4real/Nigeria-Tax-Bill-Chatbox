@@ -1,3 +1,10 @@
+"""
+Document structure annotation step.
+
+Annotates extracted tax bill pages with hierarchical structure metadata
+(chapters, parts, and sections) using regex pattern matching.
+"""
+
 from zenml import step
 import logging
 import re

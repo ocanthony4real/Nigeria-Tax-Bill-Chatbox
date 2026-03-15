@@ -269,12 +269,12 @@ Common questions about the Nigeria Tax Bill Chatbot.
 
 ??? question "How can I contribute?"
 
-    We welcome contributions! See our [Contributing Guide](contributing.md) for:
+    We welcome contributions! Visit our [GitHub repository](https://github.com/ocanthony4real/Nigeria-Tax-Bill-Chatbox) to:
 
-    - Development setup
-    - Code style guidelines
-    - Pull request process
-    - Areas where help is needed
+    - Fork the repository
+    - Submit pull requests
+    - Report issues
+    - Suggest improvements
 
 ---
 

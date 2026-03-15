@@ -90,6 +90,20 @@ description: AI-powered legal assistant for Nigerian tax law with accurate, cita
 
 ---
 
+## :material-file-check: Verify Chatbot Responses
+
+<div class="verification-section" markdown>
+
+!!! success "Trust but Verify"
+    Every response from our chatbot includes **Section and Page citations**. You can verify any answer directly from the official source document.
+
+[:material-file-pdf-box: Download Nigeria Tax Act 2025 (PDF)](source-document.md){ .md-button .md-button--primary }
+[:octicons-arrow-right-24: Learn How to Verify](source-document.md){ .md-button }
+
+</div>
+
+---
+
 ## :bar_chart: Performance Metrics
 
 <div class="grid cards metric-cards" markdown>
@@ -296,14 +310,6 @@ A **fine-tuned LLaMA 3.1 8B** model generates accurate answers with proper citat
 
     [:octicons-arrow-right-24: Troubleshooting](troubleshooting.md)
 
--   :material-account-group:{ .lg .middle } **Contributing**
-
-    ---
-
-    Help improve the project
-
-    [:octicons-arrow-right-24: Contributing Guide](contributing.md)
-
 -   :material-message:{ .lg .middle } **Feedback**
 
     ---
@@ -326,7 +332,7 @@ A **fine-tuned LLaMA 3.1 8B** model generates accurate answers with proper citat
     - Scale-to-zero for cost optimization
     - Comprehensive documentation
 
-    [:octicons-arrow-right-24: View Changelog](changelog.md)
+    [:octicons-arrow-right-24: View Source Document](source-document.md)
 
 ---
 

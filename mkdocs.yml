@@ -107,8 +107,12 @@ extra:
     - icon: fontawesome/solid/globe
       link: https://r8eqkf6a2g.us-east-1.awsapprunner.com
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Home: index.md
+  - Source Document: source-document.md
   - Getting Started:
     - getting-started/index.md
     - Installation: getting-started/installation.md
@@ -145,6 +149,3 @@ nav:
     - Troubleshooting: troubleshooting.md
     - Use Cases: use-cases.md
     - Glossary: glossary.md
-  - Blog: blog/index.md
-  - Contributing: contributing.md
-  - Changelog: changelog.md

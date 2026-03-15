@@ -10,8 +10,8 @@ The Nigeria Tax Bill Chatbot is powered by the official **Nigeria Tax Act 2025**
 
 <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, rgba(103, 58, 183, 0.1), rgba(81, 45, 168, 0.1)); border-radius: 12px; margin: 2rem 0;">
 
-<a href="assets/Nigeria-Tax-Act-2025.pdf" download="Nigeria-Tax-Act-2025.pdf" class="md-button md-button--primary" style="font-size: 1.1rem;">
-:material-file-pdf-box: Download Nigeria Tax Act 2025 (PDF)
+<a href="../assets/Nigeria-Tax-Act-2025.pdf" download="Nigeria-Tax-Act-2025.pdf" class="md-button md-button--primary" style="font-size: 1.1rem;">
+Download Nigeria Tax Act 2025 (PDF)
 </a>
 
 </div>

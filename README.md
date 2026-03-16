@@ -7,8 +7,6 @@
 
 An AI-powered legal assistant that provides accurate, citation-backed answers about Nigerian tax law. Built with **RAG (Retrieval-Augmented Generation)** and a **fine-tuned LLaMA 3.1 8B** model.
 
-![Demo](docs/demo.gif)
-
 ---
 
 ## Problem Statement
@@ -322,11 +320,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Author
 
-**Anthony O.**
+**Anthony Orji**
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/yourprofile)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/anthony-orji-02311b233/)
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-black?style=flat-square&logo=github)](https://github.com/ocanthony4real)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-green?style=flat-square)](https://yourportfolio.com)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-green?style=flat-square)](https://ocanthony4real.github.io/AnthonyOrji.github.io/)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-Model-yellow?style=flat-square&logo=huggingface)](https://huggingface.co/ocanthony4real)
 
 ---
 
